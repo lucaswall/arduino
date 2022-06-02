@@ -64,7 +64,7 @@ void configureSensor(void)
 /**************************************************************************/
 void setup(void) 
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
  
   Serial.println(F("Starting Adafruit TSL2591 Test!"));
  
