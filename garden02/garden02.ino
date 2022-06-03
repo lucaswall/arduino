@@ -6,7 +6,7 @@
 #include "secrets.h"
 
 const char* MQTT_CLIENTID = "wemos_garden02";
-const unsigned long sleepTime = 5;
+const unsigned long sleepTime = 60 * 5;
 const int batterySensor = A0;
 
 bool tsl2591Init = false;
@@ -36,6 +36,8 @@ void readSensor() {
   if (!tsl2591Init) setupSensor();
 
   if (tsl2591Init) {
+
+    /*
     const uint32_t lum = tsl.getFullLuminosity();
     const uint16_t ir = lum >> 16;
     const uint16_t full = lum & 0xFFFF;
@@ -45,8 +47,13 @@ void readSensor() {
     Serial.print(F("Full: ")); Serial.print(full); Serial.print(F("  "));
     Serial.print(F("Visible: ")); Serial.print(visible); Serial.print(F("  "));
     Serial.print(F("Lux: ")); Serial.println(lux, 0);
+    */
+
+    const uint16_t lum = tsl.getLuminosity(TSL2591_VISIBLE);
+    Serial.print(F("Lum: ")); Serial.println(lum, 0);
+
     client.publish("garden02/tsl2591/available", "online", true);
-    client.publish("garden02/tsl2591/illuminance", String(lux, 0).c_str(), true);
+    client.publish("garden02/tsl2591/illuminance", String(lum).c_str(), true);
   } else {
     Serial.println(F("TSL2591 is not availiable for reading..."));
     client.publish("garden02/tsl2591/available", "offline", true);
@@ -73,8 +80,9 @@ void setup() {
   readSensor();
 
   delay(500);
-  delay(sleepTime * 1000); ESP.restart();
-  //ESP.deepSleep(sleepTime * 1000000);
+  Serial.println(F("Sleep!"));
+  //delay(sleepTime * 1000); ESP.restart();
+  ESP.deepSleep(sleepTime * 1000000);
 }
 
 void loop() {
