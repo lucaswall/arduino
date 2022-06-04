@@ -20,9 +20,10 @@ void setupSensor() {
     Serial.println(F("TSL2591 sensor found!"));
   } else {
     Serial.println(F("ERROR!! TSL2591 sensor NOT FOUND!"));
+    tsl2591Init = false;
     return;
   }
-  tsl.setGain(TSL2591_GAIN_MED);
+  tsl.setGain(TSL2591_GAIN_LOW);
   tsl.setTiming(TSL2591_INTEGRATIONTIME_300MS);
   tsl2591Init = true;
 }
@@ -36,8 +37,7 @@ void readSensor() {
   if (!tsl2591Init) setupSensor();
 
   if (tsl2591Init) {
-
-    /*
+    tsl.getFullLuminosity();
     const uint32_t lum = tsl.getFullLuminosity();
     const uint16_t ir = lum >> 16;
     const uint16_t full = lum & 0xFFFF;
@@ -47,13 +47,11 @@ void readSensor() {
     Serial.print(F("Full: ")); Serial.print(full); Serial.print(F("  "));
     Serial.print(F("Visible: ")); Serial.print(visible); Serial.print(F("  "));
     Serial.print(F("Lux: ")); Serial.println(lux, 0);
-    */
-
-    const uint16_t lum = tsl.getLuminosity(TSL2591_VISIBLE);
-    Serial.print(F("Lum: ")); Serial.println(lum, 0);
-
+    client.publish("garden02/tsl2591/full", String(full).c_str(), true);
+    client.publish("garden02/tsl2591/visible", String(visible).c_str(), true);
+    client.publish("garden02/tsl2591/ir", String(ir).c_str(), true);
+    client.publish("garden02/tsl2591/illuminance", String(lux, 0).c_str(), true);
     client.publish("garden02/tsl2591/available", "online", true);
-    client.publish("garden02/tsl2591/illuminance", String(lum).c_str(), true);
   } else {
     Serial.println(F("TSL2591 is not availiable for reading..."));
     client.publish("garden02/tsl2591/available", "offline", true);
