@@ -23,7 +23,7 @@ void setupSensor() {
     tsl2591Init = false;
     return;
   }
-  tsl.setGain(TSL2591_GAIN_LOW);
+  tsl.setGain(TSL2591_GAIN_MED);
   tsl.setTiming(TSL2591_INTEGRATIONTIME_300MS);
   tsl2591Init = true;
 }
@@ -37,16 +37,31 @@ void readSensor() {
   if (!tsl2591Init) setupSensor();
 
   if (tsl2591Init) {
+
+    int gain = 25;
+    tsl.setGain(TSL2591_GAIN_MED);
     tsl.getFullLuminosity();
-    const uint32_t lum = tsl.getFullLuminosity();
-    const uint16_t ir = lum >> 16;
-    const uint16_t full = lum & 0xFFFF;
-    const uint16_t visible = full - ir;
+    uint32_t lum = tsl.getFullLuminosity();
+    uint16_t ir = lum >> 16;
+    uint16_t full = lum & 0xFFFF;
+    uint16_t visible = full - ir;
+
+    if (ir == 0xFFFF || full == 0xFFFF) {
+      gain = 1;
+      tsl.setGain(TSL2591_GAIN_LOW);
+      tsl.getFullLuminosity();
+      lum = tsl.getFullLuminosity();
+      ir = lum >> 16;
+      full = lum & 0xFFFF;
+      visible = full - ir;
+    }
+
     const float lux = tsl.calculateLux(full, ir);
     Serial.print(F("IR: ")); Serial.print(ir);  Serial.print(F("  "));
     Serial.print(F("Full: ")); Serial.print(full); Serial.print(F("  "));
     Serial.print(F("Visible: ")); Serial.print(visible); Serial.print(F("  "));
     Serial.print(F("Lux: ")); Serial.println(lux, 0);
+    client.publish("garden02/tsl2591/gain", String(gain).c_str(), true);
     client.publish("garden02/tsl2591/full", String(full).c_str(), true);
     client.publish("garden02/tsl2591/visible", String(visible).c_str(), true);
     client.publish("garden02/tsl2591/ir", String(ir).c_str(), true);
