@@ -36,11 +36,12 @@ unsigned long lastReadTime = 0;
 void loop() {
 
   if (WiFi.status() != WL_CONNECTED) wifiConnect();
+  if (!client.connected()) mqttConnect();
+  client.loop();
 
   const unsigned long ct = millis();
-  if (ct < lastReadTime || ct >= lastReadTime + SENSOR_READ_FREQ) {
-    lastReadTime = millis();
-    if (!client.connected()) mqttConnect();
+  if (lastReadTime == 0 || ct >= lastReadTime + SENSOR_READ_FREQ) {
+    lastReadTime = ct;
     const float h = dht.readHumidity();
     const float t = dht.readTemperature();
     Serial.print(F("H: "));
