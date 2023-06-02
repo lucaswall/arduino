@@ -57,8 +57,10 @@ void setup()
     }
     if (WiFi.status() != WL_CONNECTED)
         wifiConnect();
-    if (!client.connected())
-        mqttConnect();
+    while (!client.connected()) {
+        if (!mqttConnect())
+            delay(1000);
+    }
     otaSetup();
 
     StaticJsonDocument<512> doc;
@@ -69,29 +71,27 @@ void setup()
     device["model"] = "Wemos Somfy Remote";
     device["manufacturer"] = "MLCM Tech";
 
-    doc["unique_id"] = "wemos_somfy_remote0_up";
-    doc["name"] = "Somfy Remote0 Up";
-    doc["command_topic"] = "wemos_somfy_remote/remote0/button";
-    doc["payload_press"] = "Up";
-    sendMqttConfig("homeassistant/button/wemos_somfy_remote0_up/config", doc);
-
     doc["unique_id"] = "wemos_somfy_remote0_my";
     doc["name"] = "Somfy Remote0 My";
     doc["command_topic"] = "wemos_somfy_remote/remote0/button";
-    doc["payload_press"] = "My";
-    sendMqttConfig("homeassistant/button/wemos_somfy_remote0_my/config", doc);
-
-    doc["unique_id"] = "wemos_somfy_remote0_down";
-    doc["name"] = "Somfy Remote0 Down";
-    doc["command_topic"] = "wemos_somfy_remote/remote0/button";
-    doc["payload_press"] = "Down";
-    sendMqttConfig("homeassistant/button/wemos_somfy_remote0_down/config", doc);
+    doc["payload_on"] = "My";
+    doc["payload_off"] = "My";
+    sendMqttConfig("homeassistant/switch/wemos_somfy_remote0_my/config", doc);
 
     doc["unique_id"] = "wemos_somfy_remote0_prog";
     doc["name"] = "Somfy Remote0 Prog";
     doc["command_topic"] = "wemos_somfy_remote/remote0/button";
     doc["payload_press"] = "Prog";
     sendMqttConfig("homeassistant/button/wemos_somfy_remote0_prog/config", doc);
+
+    doc["unique_id"] = "wemos_somfy_remote0_cover";
+    doc["name"] = "Somfy Remote0";
+    doc["command_topic"] = "wemos_somfy_remote/remote0/button";
+    doc["state_topic"] = "wemos_somfy_remote/remote0/state";
+    doc["payload_open"] = "Up";
+    doc["payload_close"] = "Down";
+    doc["payload_stop"] = "My";
+    sendMqttConfig("homeassistant/cover/wemos_somfy_remote0_cover/config", doc);
 
 }
 
@@ -144,12 +144,19 @@ void mqttCallback(const char* topic, byte* payload, unsigned int length) {
     Serial.println();
 
     if (strcmp(topic, "wemos_somfy_remote/remote0/button") == 0) {
-        if (strncasecmp((char*)payload, "up", length) == 0) sendCC1101Command(Command::Up);
+        if (strncasecmp((char*)payload, "up", length) == 0) {
+            sendCC1101Command(Command::Up);
+            client.publish("wemos_somfy_remote/remote0/state", "open");
+        }
         else if (strncasecmp((char*)payload, "my", length) == 0) sendCC1101Command(Command::My);
-        else if (strncasecmp((char*)payload, "down", length) == 0) sendCC1101Command(Command::Down);
+        else if (strncasecmp((char*)payload, "down", length) == 0) {
+            sendCC1101Command(Command::Down);
+            client.publish("wemos_somfy_remote/remote0/state", "closed");
+        }
         else if (strncasecmp((char*)payload, "prog", length) == 0) sendCC1101Command(Command::Prog);
         else Serial.println("ERROR! unkown button!");
     }
+
 }
 
 void wifiConnect()
