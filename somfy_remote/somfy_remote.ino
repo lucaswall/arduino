@@ -34,8 +34,15 @@ const char *OTA_HOSTNAME = "wemos_somfy_remote";
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-HASomfyRemote remote0(0, &client, EMITTER_GPIO, REMOTE_BASE+0, 0);
-HASomfyRemote remote1(1, &client, EMITTER_GPIO, REMOTE_BASE+1, 2);
+#define REMOTE_COUNT 5
+// don't want to do this dynamically in code and risk erasing my HA configs
+HASomfyRemote remotes[REMOTE_COUNT] = {
+    HASomfyRemote(0, &client, EMITTER_GPIO, REMOTE_BASE+0, 0),
+    HASomfyRemote(1, &client, EMITTER_GPIO, REMOTE_BASE+1, 2),
+    HASomfyRemote(2, &client, EMITTER_GPIO, REMOTE_BASE+2, 4),
+    HASomfyRemote(3, &client, EMITTER_GPIO, REMOTE_BASE+3, 6),
+    HASomfyRemote(4, &client, EMITTER_GPIO, REMOTE_BASE+4, 8),
+};
 
 void setup()
 {
@@ -76,8 +83,7 @@ void setup()
     }
     otaSetup();
 
-    remote0.registerDevice();
-    remote1.registerDevice();
+    for (int i = 0; i < REMOTE_COUNT; i++) remotes[i].registerDevice();
 
 }
 
@@ -97,7 +103,7 @@ void loop()
     {
         const String string = Serial.readStringUntil('\n');
         const Command command = getSomfyCommand(string);
-        remote0.sendCommand(command);
+        remotes[0].sendCommand(command);
         Serial.println("finished sending");
     }
 
@@ -114,8 +120,7 @@ void mqttCallback(const char* topic, byte* payload, unsigned int length) {
     Serial.write((char*)payload, length);
     Serial.println();
 
-    remote0.mqttCallback(topic, payload, length);
-    remote1.mqttCallback(topic, payload, length);
+    for (int i = 0; i < REMOTE_COUNT; i++) remotes[i].mqttCallback(topic, payload, length);
 
 }
 
@@ -144,8 +149,7 @@ bool mqttConnect()
     if (client.connect(MQTT_CLIENTID, MQTT_USER, MQTT_PASS))
     {
         Serial.println(F("connected"));
-        remote0.mqttSubscribe();
-        remote1.mqttSubscribe();
+        for (int i = 0; i < REMOTE_COUNT; i++) remotes[i].mqttSubscribe();
         return true;
     }
     Serial.print(F("failed, rc="));
