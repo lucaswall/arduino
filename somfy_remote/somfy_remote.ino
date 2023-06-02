@@ -1,15 +1,27 @@
 
+// Copyright (C) 2023 Lucas Wall <wall.lucas@gmail.com>
+
 #include <EEPROM.h>
-#include <EEPROMRollingCodeStorage.h>
 #include <ELECHOUSE_CC1101_SRC_DRV.h>
-#include <SomfyRemote.h>
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <DHT.h>
 #include <ArduinoOTA.h>
-#include <ArduinoJson.h>
 
 #include "secrets.h"
+#include "HASomfyRemote.h"
+
+// E07-M1101D -> Wemos mini (PINS)
+// E07-M1101D-SMA_Usermanual_EN_v1.30.pdf
+// https://github.com/LSatan/SmartRC-CC1101-Driver-Lib/blob/master/img/Esp8266_CC1101.png
+// 1 (GND)       -> G
+// 2 (VCC)       -> 3V3
+// 3 (GDO0)      -> D1
+// 4 (CSN)       -> D8
+// 5 (SCK)       -> D5
+// 6 (MOSI)      -> D7
+// 7 (MISO/GDO1) -> D6
+// 8 (GDO2)      -> D2
 
 #define EMITTER_GPIO D1
 #define EEPROM_ADDRESS 0
@@ -19,10 +31,11 @@
 const char *MQTT_CLIENTID = "wemos_somfy_remote";
 const char *OTA_HOSTNAME = "wemos_somfy_remote";
 
-EEPROMRollingCodeStorage rollingCodeStorage(EEPROM_ADDRESS);
-SomfyRemote somfyRemote(EMITTER_GPIO, REMOTE, &rollingCodeStorage);
 WiFiClient espClient;
 PubSubClient client(espClient);
+
+HASomfyRemote remote0(0, &client, EMITTER_GPIO, REMOTE_BASE+0, 0);
+HASomfyRemote remote1(1, &client, EMITTER_GPIO, REMOTE_BASE+1, 2);
 
 void setup()
 {
@@ -49,75 +62,34 @@ void setup()
     // ELECHOUSE_cc1101.setCrc(1);     // 1 = CRC calculation in TX and CRC check in RX enabled. 0 = CRC disabled for TX and RX.
     Serial.println("Tx Mode");
 
-    somfyRemote.setup();
-    EEPROM.begin(4);
+    EEPROM.begin(32);
+    client.setCallback(mqttCallback);
 
     if (!client.setBufferSize(1024)) {
         Serial.println("ERROR! failed to alloc mqtt buffer");
     }
-    if (WiFi.status() != WL_CONNECTED)
-        wifiConnect();
     while (!client.connected()) {
+        if (WiFi.status() != WL_CONNECTED)
+            wifiConnect();
         if (!mqttConnect())
             delay(1000);
     }
     otaSetup();
 
-    StaticJsonDocument<512> doc;
+    remote0.registerDevice();
+    remote1.registerDevice();
 
-    JsonObject device = doc.createNestedObject("device");
-    device["identifiers"][0] = "wemos_somfy_remote0";
-    device["name"] = "Somfy Remote0";
-    device["model"] = "Wemos Somfy Remote";
-    device["manufacturer"] = "MLCM Tech";
-
-    doc["unique_id"] = "wemos_somfy_remote0_my";
-    doc["name"] = "Somfy Remote0 My";
-    doc["command_topic"] = "wemos_somfy_remote/remote0/button";
-    doc["payload_on"] = "My";
-    doc["payload_off"] = "My";
-    sendMqttConfig("homeassistant/switch/wemos_somfy_remote0_my/config", doc);
-
-    doc["unique_id"] = "wemos_somfy_remote0_prog";
-    doc["name"] = "Somfy Remote0 Prog";
-    doc["command_topic"] = "wemos_somfy_remote/remote0/button";
-    doc["payload_press"] = "Prog";
-    sendMqttConfig("homeassistant/button/wemos_somfy_remote0_prog/config", doc);
-
-    doc["unique_id"] = "wemos_somfy_remote0_cover";
-    doc["name"] = "Somfy Remote0";
-    doc["command_topic"] = "wemos_somfy_remote/remote0/button";
-    doc["state_topic"] = "wemos_somfy_remote/remote0/state";
-    doc["payload_open"] = "Up";
-    doc["payload_close"] = "Down";
-    doc["payload_stop"] = "My";
-    sendMqttConfig("homeassistant/cover/wemos_somfy_remote0_cover/config", doc);
-
-}
-
-void sendMqttConfig(const char* topic, StaticJsonDocument<512>& doc) {
-    String output;
-    serializeJson(doc, output);
-    Serial.println(output);
-    Serial.print("sending config ... ");
-    boolean r = client.publish(topic, output.c_str(), true);
-    Serial.println(r);
-}
-
-void sendCC1101Command(Command command)
-{
-    ELECHOUSE_cc1101.SetTx();
-    somfyRemote.sendCommand(command);
-    ELECHOUSE_cc1101.setSidle();
 }
 
 void loop()
 {
 
-    if (WiFi.status() != WL_CONNECTED)
-        wifiConnect();
-    if (!client.connected())
-        mqttConnect();
+    while (!client.connected()) {
+        if (WiFi.status() != WL_CONNECTED)
+            wifiConnect();
+        if (!mqttConnect())
+            delay(1000);
+    }
     
     client.loop();
 
@@ -125,7 +97,7 @@ void loop()
     {
         const String string = Serial.readStringUntil('\n');
         const Command command = getSomfyCommand(string);
-        sendCC1101Command(command);
+        remote0.sendCommand(command);
         Serial.println("finished sending");
     }
 
@@ -136,26 +108,14 @@ void loop()
 
 void mqttCallback(const char* topic, byte* payload, unsigned int length) {
 
-
     Serial.print("TOPIC: ");
     Serial.println(topic);
     Serial.print("PAYLOAD: ");
     Serial.write((char*)payload, length);
     Serial.println();
 
-    if (strcmp(topic, "wemos_somfy_remote/remote0/button") == 0) {
-        if (strncasecmp((char*)payload, "up", length) == 0) {
-            sendCC1101Command(Command::Up);
-            client.publish("wemos_somfy_remote/remote0/state", "open");
-        }
-        else if (strncasecmp((char*)payload, "my", length) == 0) sendCC1101Command(Command::My);
-        else if (strncasecmp((char*)payload, "down", length) == 0) {
-            sendCC1101Command(Command::Down);
-            client.publish("wemos_somfy_remote/remote0/state", "closed");
-        }
-        else if (strncasecmp((char*)payload, "prog", length) == 0) sendCC1101Command(Command::Prog);
-        else Serial.println("ERROR! unkown button!");
-    }
+    remote0.mqttCallback(topic, payload, length);
+    remote1.mqttCallback(topic, payload, length);
 
 }
 
@@ -184,8 +144,8 @@ bool mqttConnect()
     if (client.connect(MQTT_CLIENTID, MQTT_USER, MQTT_PASS))
     {
         Serial.println(F("connected"));
-        client.setCallback(mqttCallback);
-        client.subscribe("wemos_somfy_remote/remote0/button");
+        remote0.mqttSubscribe();
+        remote1.mqttSubscribe();
         return true;
     }
     Serial.print(F("failed, rc="));
