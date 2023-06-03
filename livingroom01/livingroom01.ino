@@ -7,11 +7,11 @@
 #include "secrets.h"
 
 #define LOOP_DELAY 100         // general loop final delay in ms
-#define SENSOR_READ_FREQ (60 * 1000)  // sensor read frequency in ms
+#define SENSOR_READ_FREQ 2000 // (60 * 1000)  // sensor read frequency in ms
 const char* MQTT_CLIENTID = "wemos_livingroom01";
 const char* OTA_HOSTNAME = "wemos_livingroom01";
 
-DHT dht(D8, DHT21);
+DHT dht(D2, DHT22);
 WiFiClient espClient;
 PubSubClient client(espClient);
 
