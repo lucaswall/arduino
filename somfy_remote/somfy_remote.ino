@@ -24,25 +24,22 @@
 // 8 (GDO2)      -> D2
 
 #define EMITTER_GPIO D1
-#define EEPROM_ADDRESS 0
+#define EEPROM_SIZE 64
+#define EEPROM_REMOTE_ADDRESS 0
+#define EEPROM_COUNT_ADDRESS 60
+#define MAX_REMOTES_COUNT 30
+#define INIT_REMOTES_COUNT 5
 #define REMOTE REMOTE_BASE
 #define CC1101_FREQUENCY 433.42
 #define LOOP_DELAY 100 // general loop final delay in ms
 const char *MQTT_CLIENTID = "wemos_somfy_remote";
 const char *OTA_HOSTNAME = "wemos_somfy_remote";
+const char *MQTT_TOPIC_REMOTES_COMMAND = "wemos_somfy_remote/remotes/command";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
-
-#define REMOTE_COUNT 5
-// don't want to do this dynamically in code and risk erasing my HA configs
-HASomfyRemote remotes[REMOTE_COUNT] = {
-    HASomfyRemote(0, &client, EMITTER_GPIO, REMOTE_BASE+0, 0),
-    HASomfyRemote(1, &client, EMITTER_GPIO, REMOTE_BASE+1, 2),
-    HASomfyRemote(2, &client, EMITTER_GPIO, REMOTE_BASE+2, 4),
-    HASomfyRemote(3, &client, EMITTER_GPIO, REMOTE_BASE+3, 6),
-    HASomfyRemote(4, &client, EMITTER_GPIO, REMOTE_BASE+4, 8),
-};
+uint16_t remoteCount;
+HASomfyRemote *remotes[MAX_REMOTES_COUNT];
 
 void setup()
 {
@@ -69,9 +66,24 @@ void setup()
     // ELECHOUSE_cc1101.setCrc(1);     // 1 = CRC calculation in TX and CRC check in RX enabled. 0 = CRC disabled for TX and RX.
     Serial.println("Tx Mode");
 
-    EEPROM.begin(32);
+    EEPROM.begin(EEPROM_SIZE);
     client.setCallback(mqttCallback);
 
+    EEPROM.get(EEPROM_COUNT_ADDRESS, remoteCount);
+    Serial.print("Remotes count = ");
+    Serial.println(remoteCount);
+    if (remoteCount > MAX_REMOTES_COUNT || remoteCount < INIT_REMOTES_COUNT) {
+        Serial.println("Initializing remote count");
+        remoteCount = INIT_REMOTES_COUNT;
+        EEPROM.put(EEPROM_COUNT_ADDRESS, remoteCount);
+        EEPROM.commit();
+        Serial.print("Remotes count = ");
+        Serial.println(remoteCount);
+    }
+
+    for (int i = 0; i < remoteCount; i++) {
+        remotes[i] = new HASomfyRemote(i, &client, EMITTER_GPIO, REMOTE_BASE+i, EEPROM_REMOTE_ADDRESS+(i*2));
+    }
     if (!client.setBufferSize(1024)) {
         Serial.println("ERROR! failed to alloc mqtt buffer");
     }
@@ -83,7 +95,25 @@ void setup()
     }
     otaSetup();
 
-    for (int i = 0; i < REMOTE_COUNT; i++) remotes[i].registerDevice();
+    for (int i = 0; i < remoteCount; i++) {
+        remotes[i]->registerDevice();
+    }
+
+    StaticJsonDocument<512> doc;
+
+    // device information
+    JsonObject device = doc.createNestedObject("device");
+    device["identifiers"][0] = "wemos_somfy_remotes";
+    device["name"] = "Somfy Remotes Controller";
+    device["model"] = "Wemos Somfy Remote";
+    device["manufacturer"] = "MLCM Tech";
+
+    // Add remote button
+    doc["unique_id"] = "wemos_somfy_remotes_add";
+    doc["name"] = "Somfy Remotes Add";
+    doc["command_topic"] = MQTT_TOPIC_REMOTES_COMMAND;
+    doc["payload_press"] = "Add";
+    HASomfyRemote::sendMqttConfig(client, "homeassistant/button/wemos_somfy_remotes_add/config", doc);
 
 }
 
@@ -103,7 +133,7 @@ void loop()
     {
         const String string = Serial.readStringUntil('\n');
         const Command command = getSomfyCommand(string);
-        remotes[0].sendCommand(command);
+        remotes[0]->sendCommand(command);
         Serial.println("finished sending");
     }
 
@@ -120,7 +150,18 @@ void mqttCallback(const char* topic, byte* payload, unsigned int length) {
     Serial.write((char*)payload, length);
     Serial.println();
 
-    for (int i = 0; i < REMOTE_COUNT; i++) remotes[i].mqttCallback(topic, payload, length);
+    for (int i = 0; i < remoteCount; i++) remotes[i]->mqttCallback(topic, payload, length);
+
+    if (strcmp(topic, MQTT_TOPIC_REMOTES_COMMAND) == 0) {
+        if (strncasecmp((char*)payload, "add", length) == 0) {
+            int remoteNum = remoteCount++;
+            EEPROM.put(EEPROM_COUNT_ADDRESS, remoteNum);
+            EEPROM.commit();
+            remotes[remoteNum] = new HASomfyRemote(remoteNum, &client, EMITTER_GPIO, REMOTE_BASE+remoteNum, EEPROM_REMOTE_ADDRESS+(remoteNum*2));
+            remotes[remoteNum]->registerDevice();
+            remotes[remoteNum]->mqttSubscribe();
+        }
+    }
 
 }
 
@@ -149,7 +190,8 @@ bool mqttConnect()
     if (client.connect(MQTT_CLIENTID, MQTT_USER, MQTT_PASS))
     {
         Serial.println(F("connected"));
-        for (int i = 0; i < REMOTE_COUNT; i++) remotes[i].mqttSubscribe();
+        client.subscribe(MQTT_TOPIC_REMOTES_COMMAND);
+        for (int i = 0; i < remoteCount; i++) remotes[i]->mqttSubscribe();
         return true;
     }
     Serial.print(F("failed, rc="));

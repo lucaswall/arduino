@@ -16,6 +16,9 @@ private:
     char topicState[100];
 
 public:
+    static void sendMqttConfig(PubSubClient& mqttClient, const char* topic, StaticJsonDocument<512>& doc);
+
+public:
     HASomfyRemote(int remoteNumber, PubSubClient* mqttClient, byte emitterPin, uint32_t remoteAddress, int rollingCodeStorageAddress);
     virtual ~HASomfyRemote();
     void registerDevice();
@@ -24,7 +27,8 @@ public:
     void mqttSubscribe();
 
 private:
-    void sendMqttConfig(const char* topic, StaticJsonDocument<512>& doc);
+    const char* commandToString(Command command);
     void sendCC1101Command(Command command);
+    void sendMqttConfig(const char* topic, StaticJsonDocument<512>& doc);
 
 };

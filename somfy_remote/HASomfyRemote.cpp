@@ -4,6 +4,14 @@
 #include "HASomfyRemote.h"
 
 HASomfyRemote::HASomfyRemote(int remoteNumber, PubSubClient* mqttClientObj, byte emitterPin, uint32_t remoteAddress, int rollingCodeStorageAddress) {
+    Serial.print("New Somfy remote number = ");
+    Serial.print(remoteNumber, DEC);
+    Serial.print(", emitter pin = ");
+    Serial.print(emitterPin, DEC);
+    Serial.print(", remote = ");
+    Serial.print(remoteAddress, HEX);
+    Serial.print(", eeprom address = ");
+    Serial.println(rollingCodeStorageAddress, DEC);
     remoteNum = remoteNumber;
     mqttClient = mqttClientObj;
     codeStorage = new EEPROMRollingCodeStorage(rollingCodeStorageAddress);
@@ -18,6 +26,9 @@ HASomfyRemote::~HASomfyRemote() {
 }
 
 void HASomfyRemote::registerDevice() {
+
+    Serial.print("======= *** Registering remote ");
+    Serial.println(remoteNum, DEC);
 
     remote->setup();
 
@@ -80,16 +91,40 @@ void HASomfyRemote::registerDevice() {
     sendMqttConfig(remoteConfig, doc);
 }
 
-void HASomfyRemote::sendMqttConfig(const char* topic, StaticJsonDocument<512>& doc) {
+void HASomfyRemote::sendMqttConfig(PubSubClient& mqttClient, const char* topic, StaticJsonDocument<512>& doc) {
     String output;
     serializeJson(doc, output);
     Serial.println(output);
     Serial.print("sending config ... ");
-    boolean r = mqttClient->publish(topic, output.c_str(), true);
+    boolean r = mqttClient.publish(topic, output.c_str(), true);
     Serial.println(r);
 }
 
+void HASomfyRemote::sendMqttConfig(const char* topic, StaticJsonDocument<512>& doc) {
+    sendMqttConfig(*mqttClient, topic, doc);
+}
+
+const char* HASomfyRemote::commandToString(Command command) {
+    switch (command) {
+        default: return "UNKOWN REMOTE COMMAND";
+	    case Command::My: return "My";
+        case Command::Up: return "Up";
+        case Command::MyUp: return "MyUp";
+        case Command::Down: return "Down";
+        case Command::MyDown: return "MyDown";
+        case Command::UpDown: return "UpDown";
+        case Command::Prog: return "Prog";
+        case Command::SunFlag: return "SunFlag";
+        case Command::Flag: return "Flag";
+    }
+    return "UNKOWN REMOTE COMMAND";
+}
+
 void HASomfyRemote::sendCC1101Command(Command command) {
+    Serial.print("Sending command ");
+    Serial.print(commandToString(command));
+    Serial.print(" to remote ");
+    Serial.println(remoteNum, DEC);
     ELECHOUSE_cc1101.SetTx();
     remote->sendCommand(command);
     ELECHOUSE_cc1101.setSidle();
@@ -112,5 +147,7 @@ void HASomfyRemote::mqttCallback(const char* topic, byte* payload, unsigned int 
 }
 
 void HASomfyRemote::mqttSubscribe() {
+    Serial.print("Subscribing to ");
+    Serial.println(topicCommand);
     mqttClient->subscribe(topicCommand);
 }
