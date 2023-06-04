@@ -14,6 +14,7 @@ private:
     RollingCodeStorage *codeStorage = nullptr;
     char topicCommand[100];
     char topicState[100];
+    char topicMyState[100];
 
 public:
     static void sendMqttConfig(PubSubClient& mqttClient, const char* topic, StaticJsonDocument<512>& doc);

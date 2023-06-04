@@ -18,6 +18,7 @@ HASomfyRemote::HASomfyRemote(int remoteNumber, PubSubClient* mqttClientObj, byte
     remote = new SomfyRemote(emitterPin, remoteAddress, codeStorage);
     sprintf(topicCommand, "wemos_somfy_remote/remote%d/button", remoteNum);
     sprintf(topicState, "wemos_somfy_remote/remote%d/state", remoteNum);
+    sprintf(topicMyState, "wemos_somfy_remote/remote%d/my_state", remoteNum);
 }
 
 HASomfyRemote::~HASomfyRemote() {
@@ -66,6 +67,7 @@ void HASomfyRemote::registerDevice() {
     sprintf(buttonMyName, "Somfy Remote%d My", remoteNum);
     doc["name"] = buttonMyName;
     doc["command_topic"] = topicCommand;
+    doc["state_topic"] = topicMyState;
     doc["payload_on"] = "My";
     doc["payload_off"] = "My";
     doc["assumed_state"] = false;
@@ -134,11 +136,17 @@ void HASomfyRemote::mqttCallback(const char* topic, byte* payload, unsigned int 
     if (strcmp(topic, topicCommand) == 0) {
         if (strncasecmp((char*)payload, "up", length) == 0) {
             sendCC1101Command(Command::Up);
+            delay(500);
             mqttClient->publish(topicState, "open");
         }
-        else if (strncasecmp((char*)payload, "my", length) == 0) sendCC1101Command(Command::My);
+        else if (strncasecmp((char*)payload, "my", length) == 0) {
+            sendCC1101Command(Command::My);
+            delay(500);
+            mqttClient->publish(topicMyState, "off");
+        }
         else if (strncasecmp((char*)payload, "down", length) == 0) {
             sendCC1101Command(Command::Down);
+            delay(500);
             mqttClient->publish(topicState, "closed");
         }
         else if (strncasecmp((char*)payload, "prog", length) == 0) sendCC1101Command(Command::Prog);
