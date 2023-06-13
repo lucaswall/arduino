@@ -1,6 +1,4 @@
 
-#include <DHT.h>
-
 #include "secrets.h"
 #include "HANetwork.h"
 #include "DHTSensor.h"

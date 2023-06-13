@@ -4,15 +4,14 @@
 DHTSensor::DHTSensor(HANetwork &haNetworkInit, unsigned long readFreqInit, uint8_t inputPin, uint8_t sensorType, const char *deviceIdInit, const char *roomNameInit)
     : haNetwork(haNetworkInit), dht(inputPin, sensorType)
 {
-    char buf[100];
     readFreq = readFreqInit;
     deviceId = deviceIdInit;
     roomName = roomNameInit;
-    topicAvailable = (sprintf(buf, "%s/dht/available", deviceIdInit), buf);
-    topicTemperature = (sprintf(buf, "%s/dht/temperature", deviceIdInit), buf);
-    topicHumidity = (sprintf(buf, "%s/dht/humidity", deviceIdInit), buf);
-    topicHeatIndex = (sprintf(buf, "%s/dht/heatindex", deviceIdInit), buf);
-    topicUptime = (sprintf(buf, "%s/dht/uptime", deviceIdInit), buf);
+    topicAvailable = deviceId + "/dht/available";
+    topicTemperature = deviceId + "/dht/temperature";
+    topicHumidity = deviceId + "/dht/humidity";
+    topicHeatIndex = deviceId + "/dht/heatindex";
+    topicUptime = deviceId + "/dht/uptime";
 }
 
 void DHTSensor::setup()
@@ -42,8 +41,8 @@ void DHTSensor::setup()
     doc["name"] = (sprintf(buf, "%s Temperature", roomName.c_str()), buf);
     doc["unique_id"] = (sprintf(buf, "%s.temperature", deviceId.c_str()), buf);
     doc["device_class"] = "temperature";
-    doc["state_topic"] = topicTemperature;
-    doc["availability_topic"] = topicAvailable;
+    doc["state_topic"] = topicTemperature.c_str();
+    doc["availability_topic"] = topicAvailable.c_str();
     doc["force_update"] = true;
     doc["unit_of_measurement"] = "°C";
     doc["suggested_display_precision"] = 1;
@@ -53,8 +52,8 @@ void DHTSensor::setup()
     doc["name"] = (sprintf(buf, "%s Humidity", roomName.c_str()), buf);
     doc["unique_id"] = (sprintf(buf, "%s.humidity", deviceId.c_str()), buf);
     doc["device_class"] = "humidity";
-    doc["state_topic"] = topicHumidity;
-    doc["availability_topic"] = topicAvailable;
+    doc["state_topic"] = topicHumidity.c_str();
+    doc["availability_topic"] = topicAvailable.c_str();
     doc["force_update"] = true;
     doc["unit_of_measurement"] = "%";
     doc["suggested_display_precision"] = 0;
@@ -64,8 +63,8 @@ void DHTSensor::setup()
     doc["name"] = (sprintf(buf, "%s Heat Index", roomName.c_str()), buf);
     doc["unique_id"] = (sprintf(buf, "%s.heatindex", deviceId.c_str()), buf);
     doc["device_class"] = "temperature";
-    doc["state_topic"] = topicHeatIndex;
-    doc["availability_topic"] = topicAvailable;
+    doc["state_topic"] = topicHeatIndex.c_str();
+    doc["availability_topic"] = topicAvailable.c_str();
     doc["force_update"] = true;
     doc["unit_of_measurement"] = "°C";
     doc["suggested_display_precision"] = 1;
