@@ -58,6 +58,7 @@ void HASomfyRemote::registerDevice() {
     char buttonProgConfig[100];
     sprintf(buttonProgConfig, "homeassistant/button/wemos_somfy_remote%d_prog/config", remoteNum);
     sendMqttConfig(buttonProgConfig, doc);
+    doc.remove("payload_press");
 
     // My button - Google Home will not handle button correctly, so using a switch
     char buttonMyUniqueId[50];
@@ -74,6 +75,8 @@ void HASomfyRemote::registerDevice() {
     char buttonMyConfig[100];
     sprintf(buttonMyConfig, "homeassistant/switch/wemos_somfy_remote%d_my/config", remoteNum);
     sendMqttConfig(buttonMyConfig, doc);
+    doc.remove("payload_on");
+    doc.remove("payload_off");
 
     // Full remote (Up, Down and My) - Google Home will not expose the My button in a convenient way
     char remoteUniqueId[50];

@@ -163,7 +163,7 @@ void mqttCallback(const char* topic, byte* payload, unsigned int length) {
     if (strcmp(topic, MQTT_TOPIC_REMOTES_COMMAND) == 0) {
         if (strncasecmp((char*)payload, "add", length) == 0) {
             int remoteNum = remoteCount++;
-            EEPROM.put(EEPROM_COUNT_ADDRESS, remoteNum);
+            EEPROM.put(EEPROM_COUNT_ADDRESS, remoteCount);
             EEPROM.commit();
             remotes[remoteNum] = new HASomfyRemote(remoteNum, &client, EMITTER_GPIO, REMOTE_BASE+remoteNum, EEPROM_REMOTE_ADDRESS+(remoteNum*2));
             remotes[remoteNum]->registerDevice();
