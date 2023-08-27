@@ -51,7 +51,7 @@ void HASomfyRemote::registerDevice() {
     sprintf(buttonProgUniqueId, "wemos_somfy_remote%d_prog", remoteNum);
     doc["unique_id"] = buttonProgUniqueId;
     char buttonProgName[50];
-    sprintf(buttonProgName, "Somfy Remote%d Prog", remoteNum);
+    sprintf(buttonProgName, "Prog", remoteNum);
     doc["name"] = buttonProgName;
     doc["command_topic"] = topicCommand;
     doc["payload_press"] = "Prog";
@@ -64,7 +64,7 @@ void HASomfyRemote::registerDevice() {
     sprintf(buttonMyUniqueId, "wemos_somfy_remote%d_my", remoteNum);
     doc["unique_id"] = buttonMyUniqueId;
     char buttonMyName[50];
-    sprintf(buttonMyName, "Somfy Remote%d My", remoteNum);
+    sprintf(buttonMyName, "My", remoteNum);
     doc["name"] = buttonMyName;
     doc["command_topic"] = topicCommand;
     doc["state_topic"] = topicMyState;
@@ -79,9 +79,7 @@ void HASomfyRemote::registerDevice() {
     char remoteUniqueId[50];
     sprintf(remoteUniqueId, "wemos_somfy_remote%d_cover", remoteNum);
     doc["unique_id"] = remoteUniqueId;
-    char remoteName[50];
-    sprintf(remoteName, "Somfy Remote%d", remoteNum);
-    doc["name"] = remoteName;
+    doc["name"] = NULL;
     doc["command_topic"] = topicCommand;
     doc["state_topic"] = topicState;
     doc["payload_open"] = "Up";

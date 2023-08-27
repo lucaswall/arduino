@@ -41,6 +41,8 @@ PubSubClient client(espClient);
 uint16_t remoteCount;
 HASomfyRemote *remotes[MAX_REMOTES_COUNT];
 
+#define HAVE_ADD_REMOTE_BUTTON 0
+
 void setup()
 {
     Serial.begin(115200);
@@ -99,6 +101,7 @@ void setup()
         remotes[i]->registerDevice();
     }
 
+#if HAVE_ADD_REMOTE_BUTTON
     StaticJsonDocument<512> doc;
 
     // device information
@@ -110,10 +113,15 @@ void setup()
 
     // Add remote button
     doc["unique_id"] = "wemos_somfy_remotes_add";
-    doc["name"] = "Somfy Remotes Add";
+    doc["name"] = "Add";
     doc["command_topic"] = MQTT_TOPIC_REMOTES_COMMAND;
     doc["payload_press"] = "Add";
     HASomfyRemote::sendMqttConfig(client, "homeassistant/button/wemos_somfy_remotes_add/config", doc);
+#else
+    Serial.print("clearing add remote button ... ");
+    boolean r = client.publish("homeassistant/button/wemos_somfy_remotes_add/config", "", true);
+    Serial.println(r);
+#endif
 
 }
 
