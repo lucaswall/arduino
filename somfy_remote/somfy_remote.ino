@@ -131,8 +131,10 @@ void loop()
     while (!client.connected()) {
         if (WiFi.status() != WL_CONNECTED)
             wifiConnect();
-        if (!mqttConnect())
+        if (!mqttConnect()) {
+            WiFi.disconnect();
             delay(1000);
+        }
     }
     
     client.loop();
