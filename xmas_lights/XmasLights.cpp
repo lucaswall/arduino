@@ -12,11 +12,11 @@ void XmasLights::init() {
 }
 
 void XmasLights::on() {
-    digitalWrite(switchPin, LOW);
+    digitalWrite(switchPin, HIGH);
 }
 
 void XmasLights::off() {
-    digitalWrite(switchPin, HIGH);
+    digitalWrite(switchPin, LOW);
 }
 
 void XmasLights::loop(unsigned long dt) {

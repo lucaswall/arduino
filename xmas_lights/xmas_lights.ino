@@ -3,11 +3,6 @@
 #include "HANetwork.h"
 #include "XmasLights.h"
 
-#define R1 D7
-#define R2 D2
-#define R3 D3
-#define R4 D4
-
 const char *MQTT_CLIENTID = "xmas_light";
 const char *OTA_HOSTNAME = "xmas_light";
 void mqttCallback(const char* topic, byte* payload, unsigned int length);
@@ -20,7 +15,14 @@ int pattern1[] = { 3000, 1000, -1 };
 
 #define LIGHTS_EFFECT_NAME_MAX 100
 
-XmasLights lights1(D7);
+#define LIGHTS_COUNT 4
+XmasLights lights[LIGHTS_COUNT] = {
+    XmasLights(D7),
+    XmasLights(D2),
+    XmasLights(D3),
+    XmasLights(D4),
+};
+
 unsigned long lastLoop;
 bool lightsOn;
 char lightsEffect[LIGHTS_EFFECT_NAME_MAX];
@@ -30,8 +32,7 @@ void setup() {
     delay(2000);
     Serial.println(F("Booting"));
 
-    lights1.init();
-    //lights1.setPattern(pattern1);
+    for (int i = 0; i < LIGHTS_COUNT; i++) lights[i].init();
     lastLoop = millis();
     lightsOn = false;
     strncpy(lightsEffect, "Always On", LIGHTS_EFFECT_NAME_MAX);
@@ -49,10 +50,9 @@ void loop() {
     unsigned long dt = ct > lastLoop ? ct - lastLoop : 0;
     lastLoop = millis();
 
-    lights1.loop(dt);
+    for (int i = 0; i < LIGHTS_COUNT; i++) lights[i].loop(dt);
 
     delay(100);
-
 }
 
 void registerMqttDevice()
@@ -89,10 +89,12 @@ void registerMqttDevice()
 
 void setLightsPattern(const char *effect) {
     if (strncasecmp(effect, "Always On", LIGHTS_EFFECT_NAME_MAX) == 0) {
-        lights1.clearPattern();
-        lights1.on();
+        for (int i = 0; i < LIGHTS_COUNT; i++) {
+            lights[i].clearPattern();
+            lights[i].on();
+        }
     } else if (strncasecmp(effect, "Pattern 1", LIGHTS_EFFECT_NAME_MAX) == 0) {
-        lights1.setPattern(pattern1);
+        for (int i = 0; i < LIGHTS_COUNT; i++) lights[i].setPattern(pattern1);
     }
 }
 
@@ -117,7 +119,7 @@ void mqttCallback(const char* topic, byte* payload, unsigned int length) {
                 if (lightsOn) {
                     setLightsPattern(lightsEffect);
                 } else {
-                    lights1.clearPattern();
+                    for (int i = 0; i < LIGHTS_COUNT; i++) lights[i].clearPattern();
                 }
             }
             const char *effect = doc["effect"];
