@@ -11,8 +11,6 @@ const char *topicState = "xmas_light/state";
 
 HANetwork haNetwork(WIFI_SSID, WIFI_PASS, MQTT_SERVER, MQTT_PORT, MQTT_CLIENTID, MQTT_USER, MQTT_PASS, OTA_HOSTNAME, OTA_PASSHASH, mqttCallback);
 
-int pattern1[] = { 3000, 1000, -1 };
-
 #define LIGHTS_EFFECT_NAME_MAX 100
 
 #define LIGHTS_COUNT 4
@@ -23,6 +21,33 @@ XmasLights lights[LIGHTS_COUNT] = {
     XmasLights(D4),
 };
 
+struct PatternT {
+    const char *name;
+    int patterns[LIGHTS_COUNT][10];
+};
+
+PatternT patterns[] = {
+    "Pattern 1", {
+        { 3000, 1000, -1 },
+        { 3000, 1000, -1 },
+        { 3000, 1000, -1 },
+        { 3000, 1000, -1 },
+    },
+    "Pattern 2", {
+        { 3000, 1000, 1000, 3000, -1 },
+        { 1000, 3000, 3000, 1000, -1 },
+        { 3000, 1000, 1000, 3000, -1 },
+        { 1000, 3000, 3000, 1000, -1 },
+    },
+    "Pattern 3", {
+        { 3000, 1000, 2400, 1600, -1 },
+        { 2800, 1200, 2600, 1400, -1 },
+        { 2600, 1400, 2800, 1200, -1 },
+        { 2400, 1600, 3000, 1000, -1 },
+    },
+    nullptr,
+};
+
 unsigned long lastLoop;
 bool lightsOn;
 char lightsEffect[LIGHTS_EFFECT_NAME_MAX];
@@ -30,7 +55,7 @@ char lightsEffect[LIGHTS_EFFECT_NAME_MAX];
 void setup() {
     Serial.begin(115200);
     delay(2000);
-    Serial.println(F("Booting"));
+    Serial.println(F("\n\nBooting"));
 
     for (int i = 0; i < LIGHTS_COUNT; i++) lights[i].init();
     lastLoop = millis();
@@ -79,7 +104,8 @@ void registerMqttDevice()
     StaticJsonDocument<512> effectList;
     doc["effect"] = true;
     effectList.add("Always On");
-    effectList.add("Pattern 1");
+    for (int p = 0; patterns[p].name != nullptr; p++)
+        effectList.add(patterns[p].name);
     doc["effect_list"] = effectList;
 
     haNetwork.mqttPublish("homeassistant/light/xmas_light/config", doc, true);
@@ -88,13 +114,16 @@ void registerMqttDevice()
 }
 
 void setLightsPattern(const char *effect) {
-    if (strncasecmp(effect, "Always On", LIGHTS_EFFECT_NAME_MAX) == 0) {
-        for (int i = 0; i < LIGHTS_COUNT; i++) {
-            lights[i].clearPattern();
-            lights[i].on();
-        }
-    } else if (strncasecmp(effect, "Pattern 1", LIGHTS_EFFECT_NAME_MAX) == 0) {
-        for (int i = 0; i < LIGHTS_COUNT; i++) lights[i].setPattern(pattern1);
+    for (int p = 0; patterns[p].name != nullptr; p++) {
+        if (strncasecmp(effect, patterns[p].name, LIGHTS_EFFECT_NAME_MAX) == 0) {
+            for (int i = 0; i < LIGHTS_COUNT; i++) lights[i].setPattern(patterns[p].patterns[i]);
+            return;
+        }    
+    }
+    // Always On
+    for (int i = 0; i < LIGHTS_COUNT; i++) {
+        lights[i].clearPattern();
+        lights[i].on();
     }
 }
 
