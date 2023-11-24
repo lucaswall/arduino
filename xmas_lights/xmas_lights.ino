@@ -16,8 +16,8 @@ HANetwork haNetwork(WIFI_SSID, WIFI_PASS, MQTT_SERVER, MQTT_PORT, MQTT_CLIENTID,
 #define LIGHTS_COUNT 4
 XmasLights lights[LIGHTS_COUNT] = {
     XmasLights(D7),
-    XmasLights(D2),
-    XmasLights(D3),
+    XmasLights(D6),
+    XmasLights(D5),
     XmasLights(D4),
 };
 
