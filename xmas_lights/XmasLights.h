@@ -16,7 +16,7 @@ class XmasLights {
 private:
     uint8_t switchPin;
     int *pattern;
-    bool lastOn;
+    bool lightOn;
     int patternPos;
     int patternTime;
 

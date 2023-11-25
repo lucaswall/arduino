@@ -45,6 +45,36 @@ PatternT patterns[] = {
         { 2600, 1400, 2800, 1200, -1 },
         { 2400, 1600, 3000, 1000, -1 },
     },
+    "Pattern 4", {
+        { 3000, 9000, -1 },
+        { 0, 3000, 3000, 6000, -1 },
+        { 0, 6000, 3000, 3000, -1 },
+        { 0, 9000, 3000, 0, -1 },
+    },
+    "Light 1", {
+        { 60000, 0, -1 },
+        { -1 },
+        { -1 },
+        { -1 },
+    },
+    "Light 2", {
+        { -1 },
+        { 60000, 0, -1 },
+        { -1 },
+        { -1 },
+    },
+    "Light 3", {
+        { -1 },
+        { -1 },
+        { 60000, 0, -1 },
+        { -1 },
+    },
+    "Light 4", {
+        { -1 },
+        { -1 },
+        { -1 },
+        { 60000, 0, -1 },
+    },
     nullptr,
 };
 
@@ -100,6 +130,9 @@ void registerMqttDevice()
     doc["unique_id"] = "xmas_light";
     doc["command_topic"] = topicCommand;
     doc["state_topic"] = topicState;
+    doc["flash_time_short"] = 1000;
+    doc["flash_time_long"] = 3000;
+    doc["icon"] = "mdi:pine-tree";
 
     StaticJsonDocument<512> effectList;
     doc["effect"] = true;
