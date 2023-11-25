@@ -2,6 +2,8 @@
 // 4 retail USB tree christmas light leds (5V 0.5A) controlled by a ULN2003
 // using an external power source (5V 5A) (not powered by the Wemos)
 
+#include <EEPROM.h>
+
 #include "secrets.h"
 #include "HANetwork.h"
 #include "XmasLights.h"
@@ -15,6 +17,7 @@ const char *topicState = "xmas_light/state";
 HANetwork haNetwork(WIFI_SSID, WIFI_PASS, MQTT_SERVER, MQTT_PORT, MQTT_CLIENTID, MQTT_USER, MQTT_PASS, OTA_HOSTNAME, OTA_PASSHASH, mqttCallback);
 
 #define LIGHTS_EFFECT_NAME_MAX 100
+#define EEPROM_EFFECT_ADDRESS 0
 
 #define LIGHTS_COUNT 4
 XmasLights lights[LIGHTS_COUNT] = {
@@ -102,8 +105,9 @@ PatternT patterns[] = {
         { -1 },
         { 60000, 0, -1 },
     },
-    nullptr,
 };
+
+const size_t patternsSize = sizeof(patterns) / sizeof(PatternT);
 
 unsigned long lastLoop;
 bool lightsOn;
@@ -114,10 +118,17 @@ void setup() {
     delay(2000);
     Serial.println(F("\n\nBooting"));
 
+    size_t effectIdx;
+    EEPROM.begin(16);
+    EEPROM.get(EEPROM_EFFECT_ADDRESS, effectIdx);
+    Serial.print(F("Saved light effect idx = "));
+    Serial.println(effectIdx);
+    if (effectIdx >= patternsSize) effectIdx = 0;
+
     for (int i = 0; i < LIGHTS_COUNT; i++) lights[i].init();
     lastLoop = millis();
     lightsOn = false;
-    strncpy(lightsEffect, patterns[0].name, LIGHTS_EFFECT_NAME_MAX);
+    strncpy(lightsEffect, patterns[effectIdx].name, LIGHTS_EFFECT_NAME_MAX);
 
     haNetwork.setup();
     registerMqttDevice();
@@ -163,7 +174,7 @@ void registerMqttDevice()
 
     StaticJsonDocument<512> effectList;
     doc["effect"] = true;
-    for (int p = 0; patterns[p].name != nullptr; p++)
+    for (int p = 0; p < patternsSize; p++)
         effectList.add(patterns[p].name);
     doc["effect_list"] = effectList;
 
@@ -173,9 +184,16 @@ void registerMqttDevice()
 }
 
 void setLightsPattern(const char *effect) {
-    for (int p = 0; patterns[p].name != nullptr; p++) {
+    for (int p = 0; p < patternsSize; p++) {
         if (strncasecmp(effect, patterns[p].name, LIGHTS_EFFECT_NAME_MAX) == 0) {
             for (int i = 0; i < LIGHTS_COUNT; i++) lights[i].setPattern(patterns[p].patterns[i]);
+            size_t effectIdx;
+            EEPROM.get(EEPROM_EFFECT_ADDRESS, effectIdx);
+            if (effectIdx != p) {
+                effectIdx = p;
+                EEPROM.put(EEPROM_EFFECT_ADDRESS, effectIdx);
+                EEPROM.commit();
+            }
             return;
         }    
     }
@@ -206,16 +224,15 @@ void mqttCallback(const char* topic, byte* payload, unsigned int length) {
             const char *state = doc["state"];
             if (state) {
                 lightsOn = strcasecmp(state, "ON") == 0;
-                if (lightsOn) {
-                    setLightsPattern(lightsEffect);
-                } else {
-                    for (int i = 0; i < LIGHTS_COUNT; i++) lights[i].clearPattern();
-                }
             }
             const char *effect = doc["effect"];
             if (effect) {
                 strncpy(lightsEffect, effect, LIGHTS_EFFECT_NAME_MAX);
-                if (lightsOn) setLightsPattern(lightsEffect);
+            }
+            if (lightsOn) {
+                setLightsPattern(lightsEffect);
+            } else {
+                for (int i = 0; i < LIGHTS_COUNT; i++) lights[i].clearPattern();
             }
         }
     }
