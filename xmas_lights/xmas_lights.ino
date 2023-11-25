@@ -30,6 +30,12 @@ struct PatternT {
 };
 
 PatternT patterns[] = {
+    "Always On", {
+        { 60000, 0, -1 },
+        { 60000, 0, -1 },
+        { 60000, 0, -1 },
+        { 60000, 0, -1 },
+    },
     "Pattern 1", {
         { 3000, 1000, -1 },
         { 3000, 1000, -1 },
@@ -105,7 +111,7 @@ void setup() {
     for (int i = 0; i < LIGHTS_COUNT; i++) lights[i].init();
     lastLoop = millis();
     lightsOn = false;
-    strncpy(lightsEffect, "Always On", LIGHTS_EFFECT_NAME_MAX);
+    strncpy(lightsEffect, patterns[0].name, LIGHTS_EFFECT_NAME_MAX);
 
     haNetwork.setup();
     registerMqttDevice();
@@ -151,7 +157,6 @@ void registerMqttDevice()
 
     StaticJsonDocument<512> effectList;
     doc["effect"] = true;
-    effectList.add("Always On");
     for (int p = 0; patterns[p].name != nullptr; p++)
         effectList.add(patterns[p].name);
     doc["effect_list"] = effectList;
@@ -168,10 +173,12 @@ void setLightsPattern(const char *effect) {
             return;
         }    
     }
-    // Always On
+    // unkown pattern
+    Serial.print(F("WARNING! Unkown effect pattern!! '"));
+    Serial.print(effect);
+    Serial.println(F("'"));
     for (int i = 0; i < LIGHTS_COUNT; i++) {
         lights[i].clearPattern();
-        lights[i].on();
     }
 }
 
