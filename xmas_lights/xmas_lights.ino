@@ -1,4 +1,7 @@
 
+// 4 retail USB tree christmas light leds (5V 0.5A) controlled by a ULN2003
+// using an external power source (5V 5A) (not powered by the Wemos)
+
 #include "secrets.h"
 #include "HANetwork.h"
 #include "XmasLights.h"
@@ -50,6 +53,18 @@ PatternT patterns[] = {
         { 0, 3000, 3000, 6000, -1 },
         { 0, 6000, 3000, 3000, -1 },
         { 0, 9000, 3000, 0, -1 },
+    },
+    "Pattern 5", {
+        { 3000, 3000, -1 },
+        { 3000, 3000, -1 },
+        { 0, 3000, 3000, 0, -1 },
+        { 0, 3000, 3000, 0, -1 },
+    },
+    "Pattern 6", {
+        { 3000, 3000, -1 },
+        { 0, 3000, 3000, 0, -1 },
+        { 3000, 3000, -1 },
+        { 0, 3000, 3000, 0, -1 },
     },
     "Light 1", {
         { 60000, 0, -1 },
