@@ -6,6 +6,7 @@
 const uint8_t sensorTempPin = 26;
 const uint8_t sensorTdsPin = 39;
 const uint8_t sensorPhPin = 36;
+const uint8_t sensorWaterLevel = 34;
 
 OneWire oneWireTemp(sensorTempPin);
 DallasTemperature sensorTemp(&oneWireTemp);
@@ -23,19 +24,23 @@ void setup() {
   sensorTemp.begin();
   pinMode(sensorTdsPin, INPUT);
   pinMode(sensorPhPin, INPUT);
+  pinMode(sensorWaterLevel, INPUT);
 }
 
 void loop() {
   const float temp = readTemperature();
   const float ppm = readPpm(temp);
   const float ph = readPH(temp);
+  const float waterLevel = readWaterLevel();
   Serial.print(F("Sensors "));
   Serial.print(temp);
   Serial.print(F(" °C, "));
   Serial.print(ppm);
   Serial.print(F(" ppm, "));
   Serial.print(ph);
-  Serial.println(F(" pH"));
+  Serial.print(F(" pH, "));
+  Serial.print(waterLevel);
+  Serial.println(F(" %wl"));
   delay(1000);
 }
 
@@ -82,8 +87,17 @@ float readPH(float temperature) {
   const float midPH = 6.86; const float midV = 1.66;
   Serial.print(F("PH "));
   const float voltage = readVoltage(sensorPhPin);
-  Serial.print(F(", V = ")); Serial.print(voltage);
   const float phValue = midPH + (voltage - midV) * ((midPH - lowPH) / (midV - lowV)) + 0.03 * (temperature - RefTemperature);
   Serial.print(F(", pH = ")); Serial.println(phValue);
   return phValue;
+}
+
+float readWaterLevel() {
+  const float minLevelV = 2.72;
+  const float maxLevelV = 0.55;
+  Serial.print(F("Water Level "));
+  const float voltage = readVoltage(sensorWaterLevel);
+  const float level = voltage >= minLevelV ? 0.0 : (voltage <= maxLevelV ? 1.0 : (voltage - minLevelV) / (maxLevelV - minLevelV));
+  Serial.print(F(", level = ")); Serial.println(level);
+  return level;
 }
