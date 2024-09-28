@@ -10,6 +10,7 @@ public:
     SensorVoltage(int pin, int readCount, int readDelay);
     virtual void init() override;
     virtual float read(SensorManager* sensorManager) override;
+    virtual bool haveReading() const override { return true; }
 
 protected:
     

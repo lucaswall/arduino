@@ -8,5 +8,6 @@ public:
 
     virtual void init() = 0;
     virtual float read(SensorManager* sensorManager) = 0;
+    virtual bool haveReading() const = 0;
 
 };

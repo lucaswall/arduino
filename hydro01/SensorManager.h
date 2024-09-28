@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SensorTemperature.h"
 #include "SensorTds.h";
 #include "SensorPh.h";
 
