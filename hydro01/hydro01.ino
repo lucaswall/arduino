@@ -1,7 +1,6 @@
 
 #include <OneWire.h>
 #include <DallasTemperature.h>
-#include <NewPing.h>
 
 const uint8_t sensorTempPin = 26;
 const uint8_t sensorTdsPin = 39;
