@@ -2,19 +2,19 @@
 
 #include "Arduino.h";
 
-class SensorReader;
+class SensorManager;
 
 class State
 {
 
 public:
 
-    State(SensorReader* sensorReader);
+    State(SensorManager* sensorManager);
     virtual void loop() = 0;
     virtual void enter() = 0;
 
 protected:
 
-    SensorReader* sensorReader;
+    SensorManager* sensorManager;
 
 };

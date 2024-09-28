@@ -1,13 +1,13 @@
 
-#include "SensorReader.h"
+#include "SensorManager.h"
 #include "State.h"
 
-void SensorReader::loop()
+void SensorManager::loop()
 {
     if (currentState != nullptr) currentState->loop();
 }
 
-void SensorReader::setState(State* state)
+void SensorManager::setState(State* state)
 {
     currentState = state;
     if (currentState != nullptr) currentState->enter();

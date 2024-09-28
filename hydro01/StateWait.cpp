@@ -1,9 +1,9 @@
 
 #include "StateWait.h"
-#include "SensorReader.h"
+#include "SensorManager.h"
 
-StateWait::StateWait(SensorReader* sensorReader, uint32_t waitTime, State *nextState)
-    : State(sensorReader)
+StateWait::StateWait(SensorManager* sensorManager, uint32_t waitTime, State *nextState)
+    : State(sensorManager)
 {
     this->waitTime = waitTime;
     this->nextState = nextState;
@@ -11,6 +11,7 @@ StateWait::StateWait(SensorReader* sensorReader, uint32_t waitTime, State *nextS
 
 void StateWait::enter()
 {
+    Serial.print(F("Wait for ")); Serial.print(waitTime); Serial.println(F(" ms"));
     exitTime = millis() + waitTime;
 }
 
@@ -18,6 +19,6 @@ void StateWait::loop()
 {
     if (millis() > exitTime)
     {
-        sensorReader->setState(nextState);
+        sensorManager->setState(nextState);
     }
 }

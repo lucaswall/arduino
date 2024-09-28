@@ -7,7 +7,7 @@ class StateWait : public State
 
 public:
 
-    StateWait(SensorReader* sensorReader, uint32_t waitTime, State *nextState);
+    StateWait(SensorManager* sensorManager, uint32_t waitTime, State *nextState);
     virtual void loop() override;
     virtual void enter() override;
 

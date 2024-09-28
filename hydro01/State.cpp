@@ -1,7 +1,7 @@
 
 #include "State.h";
 
-State::State(SensorReader* sensorReader)
+State::State(SensorManager* sensorManager)
 {
-    this->sensorReader = sensorReader;
+    this->sensorManager = sensorManager;
 }
