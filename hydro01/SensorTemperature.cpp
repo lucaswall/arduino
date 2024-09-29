@@ -1,5 +1,5 @@
 
-#include "SensorTemperature.h";
+#include "SensorTemperature.h"
 
 SensorTemperature::SensorTemperature(int pin)
 {
@@ -13,12 +13,12 @@ SensorTemperature::~SensorTemperature()
     delete oneWire;
 }
 
-void SensorTemperature::init()
+void SensorTemperature::init(SensorManager* sensorManager)
 {
     sensor->begin();
 }
 
-float SensorTemperature::read(SensorManager* sensorManager)
+void SensorTemperature::startReading()
 {
     Serial.print(F("Reading temperature "));
     sensor->requestTemperatures();
@@ -31,5 +31,4 @@ float SensorTemperature::read(SensorManager* sensorManager)
     {
         Serial.println(lastTemperature);
     }
-    return lastTemperature;
 }

@@ -2,11 +2,11 @@
 
 #include "SensorVoltage.h"
 
-class SensorTds : public SensorVoltage
+class SensorLevel : SensorVoltage
 {
 
 protected:
 
     virtual float calculateValue(float voltage) override;
-    
+
 };

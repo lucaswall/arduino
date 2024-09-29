@@ -1,5 +1,9 @@
 
 #include "SensorManager.h"
+#include "SensorTemperature.h"
+#include "SensorTds.h"
+#include "SensorPh.h"
+#include "SensorLevel.h"
 #include "State.h"
 
 void SensorManager::loop()

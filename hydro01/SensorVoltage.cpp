@@ -1,7 +1,7 @@
 
-#include "Arduino.h";
-#include "SensorVoltage.h";
-#include "config.h";
+#include "Arduino.h"
+#include "SensorVoltage.h"
+#include "config.h"
 
 SensorVoltage::SensorVoltage(int pin, int readCount, int readDelay)
 {
@@ -10,25 +10,39 @@ SensorVoltage::SensorVoltage(int pin, int readCount, int readDelay)
     this->readDelay = readDelay;
 }
 
-void SensorVoltage::init()
+void SensorVoltage::init(SensorManager* sensorManager)
 {
+    this->sensorManager = sensorManager;
     pinMode(pin, INPUT);
 }
 
-float SensorVoltage::read(SensorManager* sensorManager)
+void SensorVoltage::loop()
 {
-    Serial.print(F("reading pin ")); Serial.print(pin);
-    float pinRead = 0;
-    for (int i = 0; i < readCount; i++)
+    if (pendingReadCount > 0 && millis() >= nextReadTime)
     {
-        pinRead += analogRead(pin);
-        delay(readDelay);
+        pendingReadCount--;
+        if (pendingReadCount > 0)
+        {
+            nextReadTime = millis() + readDelay;
+            pendingReading += analogRead(pin);
+        }
+        else
+        {
+            Serial.print(F("Finished reading pin ")); Serial.print(pin);
+            pendingReading /= readCount;
+            Serial.print(F(", read = ")); Serial.print(pendingReading);
+            const float voltage = pendingReading * (VREF / MAXADC);
+            Serial.print(F(", V = ")); Serial.print(voltage);
+            lastReading = calculateValue(voltage);
+            Serial.print(F(", value = ")); Serial.println(lastReading);
+        }
     }
-    pinRead /= readCount;
-    Serial.print(F(", read = ")); Serial.print(pinRead);
-    const float voltage = pinRead * (VREF / MAXADC);
-    Serial.print(F(", V = ")); Serial.print(voltage);
-    const float value = calculateValue(sensorManager, voltage);
-    Serial.print(F(", value = ")); Serial.println(value);
-    return value;
+}
+
+void SensorVoltage::startReading()
+{
+    Serial.print(F("Start reading pin ")); Serial.println(pin);
+    pendingReadCount = readCount;
+    nextReadTime = millis() + readDelay;
+    pendingReading = analogRead(pin);;
 }
