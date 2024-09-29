@@ -2,7 +2,7 @@
 
 #include "Sensor.h"
 
-class SensorVoltage : Sensor
+class SensorVoltage : public Sensor
 {
 
 public:

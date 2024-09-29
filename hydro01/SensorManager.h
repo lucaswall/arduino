@@ -1,23 +1,42 @@
 #pragma once
 
 #include "Sensor.h"
+#include "SwitchSensor.h"
+#include "config.h"
 
 class State;
+
+enum class SensorType
+{
+    TEMPERATURE,
+    TDS,
+    PH,
+    LEVEL,
+    SENSOR_COUNT
+};
 
 class SensorManager
 {
 
 public:
 
+    SensorManager();
+
+    void init();
     void loop();
     void setState(State* state);
 
-    inline void setTemperature(float temperature) { this->temperature = temperature; }
-    inline float getTemperature() const { return temperature; }
+    inline float getTemperature() const { return sensors[static_cast<int>(SensorType::TEMPERATURE)]->getReading(); }
+    inline float getTds() const { return sensors[static_cast<int>(SensorType::TDS)]->getReading(); }
+    inline float getPh() const { return sensors[static_cast<int>(SensorType::PH)]->getReading(); }
+    inline float getLevel() const { return sensors[static_cast<int>(SensorType::LEVEL)]->getReading(); }
+    inline Sensor* getSensor(SensorType sensorType) const { return sensors[static_cast<int>(sensorType)]; }
 
 protected:
 
     State* currentState = nullptr;
-    float temperature = 25;
+    Sensor* sensors[static_cast<int>(SensorType::SENSOR_COUNT)] = { nullptr };
+    SwitchSensor switchPh;
+    SwitchSensor switchTds;
 
 };

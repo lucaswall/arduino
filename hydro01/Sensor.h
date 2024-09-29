@@ -2,7 +2,8 @@
 
 class SensorManager;
 
-class Sensor {
+class Sensor
+{
 
 public:
 

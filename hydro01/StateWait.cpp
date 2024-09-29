@@ -19,6 +19,7 @@ void StateWait::loop()
 {
     if (millis() > exitTime)
     {
+        Serial.println(F("Wait done"));
         sensorManager->setState(nextState);
     }
 }

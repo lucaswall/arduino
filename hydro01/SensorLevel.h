@@ -2,8 +2,12 @@
 
 #include "SensorVoltage.h"
 
-class SensorLevel : SensorVoltage
+class SensorLevel : public SensorVoltage
 {
+
+public:
+
+    SensorLevel(int pin, int readCount, int readDelay) : SensorVoltage(pin, readCount, readDelay) {}
 
 protected:
 

@@ -6,7 +6,7 @@
 #include "Sensor.h"
 #include "config.h"
 
-class SensorTemperature : Sensor
+class SensorTemperature : public Sensor
 {
 
 public:

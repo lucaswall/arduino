@@ -2,24 +2,27 @@
 
 #include <Arduino.h>
 
-const float VREF = 3.3;
-const float MAXADC = 4095.0;
+#define VREF 3.3
+#define MAXADC 4095.0
 
-const float RefTemperature = 25.0;
-const float TdsFactor = 0.5;
+#define SensorReadCount 30
+#define SensorReadDelay 10
 
-const float PhlowPH = 4.01;
-const float PhlowV = 2.00;
-const float PhmidPH = 6.86;
-const float PhmidV = 1.66;
+#define RefTemperature 25.0
+#define TdsFactor 0.5
 
-const float minLevelV = 2.72;
-const float maxLevelV = 0.55;
+#define PhlowPH 4.01
+#define PhlowV 2.00
+#define PhmidPH 6.86
+#define PhmidV 1.66
 
-const uint8_t SensorTempPin = 26;
-const uint8_t SensorTdsPin = 39;
-const uint8_t SensorPhPin = 36;
-const uint8_t SensorWaterLevel = 34;
+#define minLevelV 2.72
+#define maxLevelV 0.55
 
-const uint8_t SwitchTdsPin = 4;
-const uint8_t SwitchPhPin = 5;
+#define SensorTempPin 26
+#define SensorTdsPin 39
+#define SensorPhPin 36
+#define SensorWaterLevel 34
+
+#define SwitchTdsPin 4
+#define SwitchPhPin 5
