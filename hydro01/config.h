@@ -26,3 +26,12 @@
 
 #define SwitchTdsPin 4
 #define SwitchPhPin 5
+
+enum class SensorType
+{
+    TEMPERATURE,
+    TDS,
+    PH,
+    LEVEL,
+    SENSOR_COUNT
+};

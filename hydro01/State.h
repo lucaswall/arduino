@@ -1,6 +1,6 @@
-#pragma one
+#pragma once
 
-#include "Arduino.h";
+#include "config.h"
 
 class SensorManager;
 

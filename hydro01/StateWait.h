@@ -10,6 +10,7 @@ public:
     StateWait(SensorManager* sensorManager, uint32_t waitTime, State *nextState);
     virtual void loop() override;
     virtual void enter() override;
+    inline void setNextState(State *nextState) { this->nextState = nextState; }
 
 protected:
 

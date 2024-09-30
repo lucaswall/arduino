@@ -1,5 +1,6 @@
 
 #include "StateReadSensor.h"
+#include "SensorManager.h"
 
 StateReadSensor::StateReadSensor(SensorManager* sensorManager, SensorType sensorType, State *nextState)
     : State(sensorManager)
@@ -15,7 +16,8 @@ void StateReadSensor::enter()
 
 void StateReadSensor::loop()
 {
-    const Sensor *sensor = sensorManager->getSensor(sensorType);
+    Sensor *sensor = sensorManager->getSensor(sensorType);
+    sensor->loop();
     if (!sensor->isReading())
     {
         if (sensor->isError())

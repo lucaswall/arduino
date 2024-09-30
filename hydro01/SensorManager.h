@@ -3,17 +3,7 @@
 #include "Sensor.h"
 #include "SwitchSensor.h"
 #include "config.h"
-
-class State;
-
-enum class SensorType
-{
-    TEMPERATURE,
-    TDS,
-    PH,
-    LEVEL,
-    SENSOR_COUNT
-};
+#include "State.h"
 
 class SensorManager
 {
