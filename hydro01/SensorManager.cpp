@@ -44,7 +44,8 @@ void SensorManager::init()
     StateReadSensor *stateReadLevel = new StateReadSensor(this, SensorType::LEVEL, stateSwitchPhOn);
     StateReadSensor *stateReadTemperature = new StateReadSensor(this, SensorType::TEMPERATURE, stateReadLevel);
     stateWaitEndLoop->setNextState(stateReadTemperature);
-    setState(stateReadTemperature);
+    StateWait *stateWaitInitial = new StateWait(this, 10000, stateReadTemperature);
+    setState(stateWaitInitial);
 }
 
 void SensorManager::loop()

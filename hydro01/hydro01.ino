@@ -1,7 +1,15 @@
 
+#include "HANetwork.h"
 #include "SensorManager.h"
 
 SensorManager sensorManager;
+
+const char *MQTT_CLIENTID = "hydro01";
+const char *OTA_HOSTNAME = "hydro01";
+
+#include "secrets.h"
+void mqttCallback(const char* topic, byte* payload, unsigned int length);
+HANetwork haNetwork(WIFI_SSID, WIFI_PASS, MQTT_SERVER, MQTT_PORT, MQTT_CLIENTID, MQTT_USER, MQTT_PASS, OTA_HOSTNAME, OTA_PASSHASH, mqttCallback);
 
 void setup()
 {
@@ -10,9 +18,22 @@ void setup()
     delay(2000);
     Serial.println(F("======================= BEGIN ======================="));
     sensorManager.init();
+    haNetwork.setup();
 }
 
 void loop()
 {
+    haNetwork.loop();
     sensorManager.loop();
+    delay(100);
+}
+
+void mqttCallback(const char* topic, byte* payload, unsigned int length) {
+
+    Serial.print(F("TOPIC: "));
+    Serial.println(topic);
+    Serial.print(F("PAYLOAD: "));
+    Serial.write((char*)payload, length);
+    Serial.println();
+
 }
