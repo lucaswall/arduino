@@ -1,10 +1,12 @@
 
 #include "StateSensorFinalReport.h"
 #include "SensorManager.h"
+#include "MqttDevice.h"
 
-StateSensorFinalReport::StateSensorFinalReport(SensorManager* sensorManager, State *nextState)
+StateSensorFinalReport::StateSensorFinalReport(SensorManager* sensorManager, MqttDevice *mqttDevice, State *nextState)
     : State(sensorManager)
 {
+    this->mqttDevice = mqttDevice;
     this->nextState = nextState;
 }
 
@@ -15,5 +17,10 @@ void StateSensorFinalReport::enter()
     Serial.print(F("TDS = ")); Serial.println(sensorManager->getTds());
     Serial.print(F("PH = ")); Serial.println(sensorManager->getPh());
     Serial.print(F("Level = ")); Serial.println(sensorManager->getLevel());
+    Sensor *temperature = sensorManager->getSensor(SensorType::TEMPERATURE);
+    Sensor *tds = sensorManager->getSensor(SensorType::TDS);
+    Sensor *ph = sensorManager->getSensor(SensorType::PH);
+    Sensor *level = sensorManager->getSensor(SensorType::LEVEL);
+    mqttDevice->updateSensors(temperature, tds, ph, level);
     sensorManager->setState(nextState);
 }

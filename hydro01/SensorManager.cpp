@@ -20,7 +20,7 @@ SensorManager::SensorManager()
     sensors[static_cast<int>(SensorType::LEVEL)] = new SensorLevel(SensorWaterLevel, SensorReadCount, SensorReadDelay);
 }
 
-void SensorManager::init()
+void SensorManager::init(MqttDevice *mqttDevice)
 {
     Serial.println(F("SensorManager::init"));
     for (int i = 0; i < static_cast<int>(SensorType::SENSOR_COUNT); i++)
@@ -31,7 +31,7 @@ void SensorManager::init()
     switchTds.init();
 
     StateWait *stateWaitEndLoop = new StateWait(this, 10000, nullptr);
-    StateSensorFinalReport *stateSensorFinalReport = new StateSensorFinalReport(this, stateWaitEndLoop);
+    StateSensorFinalReport *stateSensorFinalReport = new StateSensorFinalReport(this, mqttDevice, stateWaitEndLoop);
     StateSwitchSensorOff *stateSwitchTdsOff = new StateSwitchSensorOff(this, &switchTds, stateSensorFinalReport);
     StateReadSensor *stateReadTds = new StateReadSensor(this, SensorType::TDS, stateSwitchTdsOff);
     StateWait *stateWaitTdsSetup = new StateWait(this, 5000, stateReadTds);

@@ -5,6 +5,8 @@
 #include "config.h"
 #include "State.h"
 
+class MqttDevice;
+
 class SensorManager
 {
 
@@ -12,7 +14,7 @@ public:
 
     SensorManager();
 
-    void init();
+    void init(MqttDevice *mqttDevice);
     void loop();
     void setState(State* state);
 
