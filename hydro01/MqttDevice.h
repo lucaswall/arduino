@@ -3,17 +3,23 @@
 #include "HANetwork.h"
 #include "Sensor.h"
 
+class SensorManager;
+
 class MqttDevice
 {
 
 public:
 
-    MqttDevice(HANetwork *haNetwork);
+    MqttDevice(HANetwork *haNetwork, SensorManager *sensorManager);
     void registerDevice();
-    void updateSensors(Sensor *temperature, Sensor *tds, Sensor *ph, Sensor *level);
+    void callback(const char* topic, byte* payload, unsigned int length);
+    void updateSensors(Sensor *temperature, Sensor *tds, Sensor *ph, Sensor *level, bool fastRead);
 
 protected:
 
     HANetwork *haNetwork;
+    SensorManager *sensorManager;
+
+    void initDiscoveryJsonDocument(JsonDocument &doc);
 
 };

@@ -56,7 +56,7 @@ bool HANetwork::mqttPublish(const char *topic, const char *payload, bool retaine
     return r;
 }
 
-bool HANetwork::mqttPublish(const char *topic, StaticJsonDocument<512> &doc, bool retained)
+bool HANetwork::mqttPublish(const char *topic, JsonDocument &doc, bool retained)
 {
     String output;
     serializeJson(doc, output);
@@ -133,5 +133,7 @@ void HANetwork::otaSetup()
 }
 
 void HANetwork::mqttSubscribe(const char *topic) {
+    Serial.print(F("MQTT subscribing to "));
+    Serial.println(topic);
     client.subscribe(topic);
 }

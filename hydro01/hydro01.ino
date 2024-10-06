@@ -11,7 +11,7 @@ void mqttCallback(const char* topic, byte* payload, unsigned int length);
 HANetwork haNetwork(WIFI_SSID, WIFI_PASS, MQTT_SERVER, MQTT_PORT, MQTT_CLIENTID, MQTT_USER, MQTT_PASS, OTA_HOSTNAME, OTA_PASSHASH, mqttCallback);
 
 SensorManager sensorManager;
-MqttDevice mqttDevice(&haNetwork);
+MqttDevice mqttDevice(&haNetwork, &sensorManager);
 
 void setup()
 {
@@ -38,5 +38,7 @@ void mqttCallback(const char* topic, byte* payload, unsigned int length) {
     Serial.print(F("PAYLOAD: "));
     Serial.write((char*)payload, length);
     Serial.println();
+
+    mqttDevice.callback(topic, payload, length);
 
 }

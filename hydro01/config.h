@@ -35,3 +35,8 @@ enum class SensorType
     LEVEL,
     SENSOR_COUNT
 };
+
+#define WAIT_INIT (1000 * 10)
+#define WAIT_CHANGESENSOR (1000 * 5)
+#define WAIT_LOOP (1000 * 60 * 5)
+#define WAIT_LOOPFAST (1000 * 5)

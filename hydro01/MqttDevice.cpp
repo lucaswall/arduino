@@ -2,6 +2,7 @@
 #include <ArduinoJson.h>
 
 #include "MqttDevice.h"
+#include "SensorManager.h"
 #include "config.h"
 
 typedef struct
@@ -59,25 +60,28 @@ const MqttSensor sensorsDefinition[] = {
     },
 };
 
-MqttDevice::MqttDevice(HANetwork *haNetwork)
+const char *action_topic = "hydro01/action";
+const char *action_payload_fastread_on = "fastread_on";
+const char *action_payload_fastread_off = "fastread_off";
+const char *action_fastread_state = "hydro01/fastread";
+const char *action_payload_on = "on";
+const char *action_payload_off = "off";
+
+MqttDevice::MqttDevice(HANetwork *haNetwork, SensorManager *sensorManager)
 {
     this->haNetwork = haNetwork;
+    this->sensorManager = sensorManager;
 }
 
 void MqttDevice::registerDevice()
 {
     Serial.println(F("MqttDevice::registerDevice"));
 
-    StaticJsonDocument<512> doc;
-    JsonObject device = doc.createNestedObject("device");
-    device["identifiers"][0] = "hydro01";
-    device["name"] = "Hydroponic Sensors";
-    device["model"] = "Wemos Hydroponic Sensors";
-    device["manufacturer"] = "MLCM Tech";
+    JsonDocument doc;
 
+    initDiscoveryJsonDocument(doc);
     for (int i = 0; i < sizeof(sensorsDefinition) / sizeof(MqttSensor); i++)
     {
-        doc["schema"] = "json";
         doc["name"] = sensorsDefinition[i].name;
         doc["object_id"] = sensorsDefinition[i].unique_id;
         doc["unique_id"] = sensorsDefinition[i].unique_id;
@@ -93,9 +97,52 @@ void MqttDevice::registerDevice()
         haNetwork->mqttPublish(buf, doc, true);
     }
 
+    initDiscoveryJsonDocument(doc);
+    doc["name"] = "Hydro01 Fast Read";
+    doc["object_id"] = "hydro01_fastread";
+    doc["unique_id"] = "hydro01_fastread";
+    doc["command_topic"] = action_topic;
+    doc["payload_on"] = action_payload_fastread_on;
+    doc["payload_off"] = action_payload_fastread_off;
+    doc["state_topic"] = action_fastread_state;
+    doc["state_on"] = action_payload_on;
+    doc["state_off"] = action_payload_off;
+    doc["icon"] = "mdi:fast-forward";
+    haNetwork->mqttPublish("homeassistant/switch/hydro01_action/config", doc, true);
+
+    haNetwork->mqttSubscribe(action_topic);
+
 }
 
-void MqttDevice::updateSensors(Sensor *temperature, Sensor *tds, Sensor *ph, Sensor *level)
+void MqttDevice::initDiscoveryJsonDocument(JsonDocument &doc)
+{
+    doc.clear();
+    doc["schema"] = "json";
+    JsonObject device = doc.createNestedObject("device");
+    device["identifiers"][0] = "hydro01";
+    device["name"] = "Hydro01";
+    device["model"] = "Wemos Hydroponic Sensors";
+    device["manufacturer"] = "MLCM Tech";
+}
+
+void MqttDevice::callback(const char* topic, byte* payload, unsigned int length)
+{
+    if (strcmp(topic, action_topic) == 0)
+    {
+        if (strncasecmp((char*)payload, action_payload_fastread_on, length) == 0)
+        {
+            sensorManager->fastReadSensors(true);
+            haNetwork->mqttPublish(action_fastread_state, action_payload_on, true);
+        }
+        else if (strncasecmp((char*)payload, action_payload_fastread_off, length) == 0)
+        {
+            sensorManager->fastReadSensors(false);
+            haNetwork->mqttPublish(action_fastread_state, action_payload_off, true);
+        }
+    }
+}
+
+void MqttDevice::updateSensors(Sensor *temperature, Sensor *tds, Sensor *ph, Sensor *level, bool fastRead)
 {
     Sensor *sensors[] = { temperature, tds, ph, level };
     for (int i = 0; i < sizeof(sensors) / sizeof(Sensor); i++)
@@ -111,4 +158,5 @@ void MqttDevice::updateSensors(Sensor *temperature, Sensor *tds, Sensor *ph, Sen
         sprintf(buf, "%.*f", sensorsDefinition[i].suggested_display_precision, sensor->getReading() * sensorsDefinition[i].multiplier);
         haNetwork->mqttPublish(sensorsDefinition[i].state_topic, buf, true);
     }
+    haNetwork->mqttPublish(action_fastread_state, fastRead ? action_payload_on : action_payload_off, true);
 }

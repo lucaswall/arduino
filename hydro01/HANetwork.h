@@ -15,7 +15,7 @@ public:
     void setup();
     void loop();
     bool mqttPublish(const char *topic, const char *payload, bool retained);
-    bool mqttPublish(const char *topic, StaticJsonDocument<512> &doc, bool retained);
+    bool mqttPublish(const char *topic, JsonDocument &doc, bool retained);
     void mqttSubscribe(const char *topic);
 
 private:
