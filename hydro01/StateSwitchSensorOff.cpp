@@ -3,10 +3,9 @@
 #include "SensorManager.h"
 
 StateSwitchSensorOff::StateSwitchSensorOff(SensorManager *sensorManager, SwitchSensor *switchSensor, State *nextState)
-    : State(sensorManager)
+    : State(sensorManager, nextState)
 {
     this->switchSensor = switchSensor;
-    this->nextState = nextState;
 }
 
 void StateSwitchSensorOff::enter()

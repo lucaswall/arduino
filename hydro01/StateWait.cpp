@@ -3,10 +3,9 @@
 #include "SensorManager.h"
 
 StateWait::StateWait(SensorManager* sensorManager, uint32_t waitTime, State *nextState)
-    : State(sensorManager)
+    : State(sensorManager, nextState)
 {
     this->waitTime = waitTime;
-    this->nextState = nextState;
 }
 
 void StateWait::enter()

@@ -4,10 +4,9 @@
 #include "MqttDevice.h"
 
 StateSensorFinalReport::StateSensorFinalReport(SensorManager* sensorManager, MqttDevice *mqttDevice, State *nextState)
-    : State(sensorManager)
+    : State(sensorManager, nextState)
 {
     this->mqttDevice = mqttDevice;
-    this->nextState = nextState;
 }
 
 void StateSensorFinalReport::enter()

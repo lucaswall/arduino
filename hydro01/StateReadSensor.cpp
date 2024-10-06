@@ -3,10 +3,9 @@
 #include "SensorManager.h"
 
 StateReadSensor::StateReadSensor(SensorManager* sensorManager, SensorType sensorType, State *nextState)
-    : State(sensorManager)
+    : State(sensorManager, nextState)
 {
     this->sensorType = sensorType;
-    this->nextState = nextState;
 }
 
 void StateReadSensor::enter()

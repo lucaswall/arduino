@@ -30,22 +30,21 @@ void SensorManager::init(MqttDevice *mqttDevice)
     switchPh.init();
     switchTds.init();
 
-    StateWait *stateWaitEndLoop = new StateWait(this, 10000, nullptr);
-    StateSensorFinalReport *stateSensorFinalReport = new StateSensorFinalReport(this, mqttDevice, stateWaitEndLoop);
-    StateSwitchSensorOff *stateSwitchTdsOff = new StateSwitchSensorOff(this, &switchTds, stateSensorFinalReport);
-    StateReadSensor *stateReadTds = new StateReadSensor(this, SensorType::TDS, stateSwitchTdsOff);
-    StateWait *stateWaitTdsSetup = new StateWait(this, 5000, stateReadTds);
-    StateSwitchSensorOn *stateSwitchTdsOn = new StateSwitchSensorOn(this, &switchTds, stateWaitTdsSetup);
-    StateWait *stateWaitPhToTds = new StateWait(this, 5000, stateSwitchTdsOn);
-    StateSwitchSensorOff *stateSwitchPhOff = new StateSwitchSensorOff(this, &switchPh, stateWaitPhToTds);
-    StateReadSensor *stateReadPh = new StateReadSensor(this, SensorType::PH, stateSwitchPhOff);
-    StateWait *stateWaitPhSetup = new StateWait(this, 5000, stateReadPh);
-    StateSwitchSensorOn *stateSwitchPhOn = new StateSwitchSensorOn(this, &switchPh, stateWaitPhSetup);
-    StateReadSensor *stateReadLevel = new StateReadSensor(this, SensorType::LEVEL, stateSwitchPhOn);
-    StateReadSensor *stateReadTemperature = new StateReadSensor(this, SensorType::TEMPERATURE, stateReadLevel);
-    stateWaitEndLoop->setNextState(stateReadTemperature);
-    StateWait *stateWaitInitial = new StateWait(this, 10000, stateReadTemperature);
-    setState(stateWaitInitial);
+    State *loopState;
+    setState(new StateWait(this, 10000))
+        ->setNextState(loopState = new StateReadSensor(this, SensorType::TEMPERATURE))
+        ->setNextState(new StateReadSensor(this, SensorType::LEVEL))
+        ->setNextState(new StateSwitchSensorOn(this, &switchPh))
+        ->setNextState(new StateReadSensor(this, SensorType::PH))
+        ->setNextState(new StateSwitchSensorOff(this, &switchPh))
+        ->setNextState(new StateWait(this, 5000))
+        ->setNextState(new StateSwitchSensorOn(this, &switchTds))
+        ->setNextState(new StateReadSensor(this, SensorType::TDS))
+        ->setNextState(new StateSwitchSensorOff(this, &switchTds))
+        ->setNextState(new StateSensorFinalReport(this, mqttDevice))
+        ->setNextState(new StateWait(this, 10000))
+        ->setNextState(loopState);
+
 }
 
 void SensorManager::loop()
@@ -53,8 +52,9 @@ void SensorManager::loop()
     if (currentState != nullptr) currentState->loop();
 }
 
-void SensorManager::setState(State* state)
+State *SensorManager::setState(State* state)
 {
     currentState = state;
     if (currentState != nullptr) currentState->enter();
+    return state;
 }

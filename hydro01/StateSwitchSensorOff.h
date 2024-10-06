@@ -8,13 +8,12 @@ class StateSwitchSensorOff : public State
 
 public:
     
-    StateSwitchSensorOff(SensorManager *sensorManager, SwitchSensor *switchSensor, State *nextState);
+    StateSwitchSensorOff(SensorManager *sensorManager, SwitchSensor *switchSensor, State *nextState = nullptr);
     virtual void loop() override {}
     virtual void enter() override;
 
 protected:
 
     SwitchSensor *switchSensor;
-    State *nextState = nullptr;
 
 };

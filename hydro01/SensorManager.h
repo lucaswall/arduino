@@ -16,7 +16,7 @@ public:
 
     void init(MqttDevice *mqttDevice);
     void loop();
-    void setState(State* state);
+    State *setState(State* state);
 
     inline float getTemperature() const { return sensors[static_cast<int>(SensorType::TEMPERATURE)]->getReading(); }
     inline float getTds() const { return sensors[static_cast<int>(SensorType::TDS)]->getReading(); }

@@ -10,13 +10,12 @@ class StateSensorFinalReport : public State
 
 public:
     
-    StateSensorFinalReport(SensorManager* sensorManager, MqttDevice *mqttDevice, State *nextState);
+    StateSensorFinalReport(SensorManager* sensorManager, MqttDevice *mqttDevice, State *nextState = nullptr);
     virtual void loop() override {}
     virtual void enter() override;
 
 protected:
 
     MqttDevice *mqttDevice;
-    State *nextState = nullptr;
 
 };
