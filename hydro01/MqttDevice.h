@@ -14,6 +14,7 @@ public:
     void registerDevice();
     void callback(const char* topic, byte* payload, unsigned int length);
     void updateSensors(Sensor *temperature, Sensor *tds, Sensor *ph, Sensor *level, bool fastRead);
+    void updateStatus(const char *status);
 
 protected:
 

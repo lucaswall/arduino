@@ -22,6 +22,7 @@ void setup()
     sensorManager.init(&mqttDevice);
     haNetwork.setup();
     mqttDevice.registerDevice();
+    mqttDevice.updateStatus("Hydro01 is online");
 }
 
 void loop()

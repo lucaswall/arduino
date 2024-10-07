@@ -67,6 +67,9 @@ const char *action_fastread_state = "hydro01/fastread";
 const char *action_payload_on = "on";
 const char *action_payload_off = "off";
 
+const char *status_topic_command = "hydro01/status/cmd";
+const char *status_topic_state = "hydro01/status/txt";
+
 MqttDevice::MqttDevice(HANetwork *haNetwork, SensorManager *sensorManager)
 {
     this->haNetwork = haNetwork;
@@ -110,8 +113,17 @@ void MqttDevice::registerDevice()
     doc["icon"] = "mdi:fast-forward";
     haNetwork->mqttPublish("homeassistant/switch/hydro01_action/config", doc, true);
 
-    haNetwork->mqttSubscribe(action_topic);
+    initDiscoveryJsonDocument(doc);
+    doc["name"] = "Hydro01 Status";
+    doc["object_id"] = "hydro01_status";
+    doc["unique_id"] = "hydro01_status";
+    doc["command_topic"] = status_topic_command;
+    doc["state_topic"] = status_topic_state;
+    doc["icon"] = "mdi:information";
+    haNetwork->mqttPublish("homeassistant/text/hydro01_status/config", doc, true);
 
+    haNetwork->mqttSubscribe(action_topic);
+    haNetwork->mqttSubscribe(status_topic_command);
 }
 
 void MqttDevice::initDiscoveryJsonDocument(JsonDocument &doc)
@@ -159,4 +171,9 @@ void MqttDevice::updateSensors(Sensor *temperature, Sensor *tds, Sensor *ph, Sen
         haNetwork->mqttPublish(sensorsDefinition[i].state_topic, buf, true);
     }
     haNetwork->mqttPublish(action_fastread_state, fastRead ? action_payload_on : action_payload_off, true);
+}
+
+void MqttDevice::updateStatus(const char *status)
+{
+    haNetwork->mqttPublish(status_topic_state, status, true);
 }
