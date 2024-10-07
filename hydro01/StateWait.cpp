@@ -2,8 +2,8 @@
 #include "StateWait.h"
 #include "SensorManager.h"
 
-StateWait::StateWait(SensorManager* sensorManager, uint32_t waitTime, State *nextState)
-    : State(sensorManager, nextState)
+StateWait::StateWait(SensorManager* sensorManager, const char *name, uint32_t waitTime)
+    : State(sensorManager, name)
 {
     this->waitTime = waitTime;
 }

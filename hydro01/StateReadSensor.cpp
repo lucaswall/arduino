@@ -2,8 +2,8 @@
 #include "StateReadSensor.h"
 #include "SensorManager.h"
 
-StateReadSensor::StateReadSensor(SensorManager* sensorManager, SensorType sensorType, State *nextState)
-    : State(sensorManager, nextState)
+StateReadSensor::StateReadSensor(SensorManager* sensorManager, const char *name, SensorType sensorType)
+    : State(sensorManager, name)
 {
     this->sensorType = sensorType;
 }

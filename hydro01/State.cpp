@@ -1,8 +1,8 @@
 
 #include "State.h";
 
-State::State(SensorManager* sensorManager, State *nextState)
+State::State(SensorManager* sensorManager, const char *name)
 {
     this->sensorManager = sensorManager;
-    this->nextState = nextState;
+    this->name = name;
 }

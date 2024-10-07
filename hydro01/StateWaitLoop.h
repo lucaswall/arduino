@@ -7,7 +7,7 @@ class StateWaitLoop : public StateWait
 
 public:
 
-    StateWaitLoop(SensorManager* sensorManager, uint32_t waitTimeNormal, uint32_t waitTimeFast, State *nextState = nullptr);
+    StateWaitLoop(SensorManager* sensorManager, const char *name, uint32_t waitTimeNormal, uint32_t waitTimeFast);
 
     void timeNormal();
     void timeFast();

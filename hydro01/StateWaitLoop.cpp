@@ -1,8 +1,8 @@
 
 #include "StateWaitLoop.h"
 
-StateWaitLoop::StateWaitLoop(SensorManager* sensorManager, uint32_t waitTimeNormal, uint32_t waitTimeFast, State *nextState)
-    : StateWait(sensorManager, waitTimeNormal, nextState)
+StateWaitLoop::StateWaitLoop(SensorManager* sensorManager, const char *name, uint32_t waitTimeNormal, uint32_t waitTimeFast)
+    : StateWait(sensorManager, name, waitTimeNormal)
 {
     this->waitTimeNormal = waitTimeNormal;
     this->waitTimeFast = waitTimeFast;

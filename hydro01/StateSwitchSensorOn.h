@@ -8,7 +8,7 @@ class StateSwitchSensorOn : public State
 
 public:
     
-    StateSwitchSensorOn(SensorManager *sensorManager, SwitchSensor *switchSensor, State *nextState = nullptr);
+    StateSwitchSensorOn(SensorManager *sensorManager, const char *name, SwitchSensor *switchSensor);
     virtual void loop() override {}
     virtual void enter() override;
 

@@ -3,8 +3,8 @@
 #include "SensorManager.h"
 #include "MqttDevice.h"
 
-StateSensorFinalReport::StateSensorFinalReport(SensorManager* sensorManager, MqttDevice *mqttDevice, State *nextState)
-    : State(sensorManager, nextState)
+StateSensorFinalReport::StateSensorFinalReport(SensorManager* sensorManager, const char *name, MqttDevice *mqttDevice)
+    : State(sensorManager, name)
 {
     this->mqttDevice = mqttDevice;
 }

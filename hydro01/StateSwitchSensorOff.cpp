@@ -2,8 +2,8 @@
 #include "StateSwitchSensorOff.h"
 #include "SensorManager.h"
 
-StateSwitchSensorOff::StateSwitchSensorOff(SensorManager *sensorManager, SwitchSensor *switchSensor, State *nextState)
-    : State(sensorManager, nextState)
+StateSwitchSensorOff::StateSwitchSensorOff(SensorManager *sensorManager, const char *name, SwitchSensor *switchSensor)
+    : State(sensorManager, name)
 {
     this->switchSensor = switchSensor;
 }
