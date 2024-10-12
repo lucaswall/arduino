@@ -10,10 +10,10 @@ StateWait::StateWait(SensorManager* sensorManager, const char *name, uint32_t wa
 
 void StateWait::enter()
 {
-    status = name + ": wait for " + String(waitTime/1000) + " s";
+    status = name + ": wait for " + String(waitTime/1000) + "s";
     Serial.print(F("Wait for ")); Serial.print(waitTime); Serial.println(F(" ms"));
     exitTime = millis() + waitTime;
-    nextStatusTime = millis() + 1000;
+    nextStatusTime = millis() + 5000;
 }
 
 void StateWait::loop()
@@ -26,7 +26,7 @@ void StateWait::loop()
     }
     if (m > nextStatusTime)
     {
-        nextStatusTime = millis() + 1000;
-        status = name + ": wait for " + String((exitTime - millis()) / 1000) + " s";
+        nextStatusTime = millis() + 5000;
+        status = name + ": wait for " + String((exitTime - millis()) / 1000) + "s";
     }
 }

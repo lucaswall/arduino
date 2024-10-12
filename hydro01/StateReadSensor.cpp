@@ -11,7 +11,7 @@ StateReadSensor::StateReadSensor(SensorManager* sensorManager, const char *name,
 void StateReadSensor::enter()
 {
     sensorManager->getSensor(sensorType)->startReading();
-    status = name + ": reading sensor " + String(static_cast<int>(sensorType));
+    status = name + ": reading sensor";
     nextStatusUpdate = millis() + 1000;
 }
 
@@ -34,6 +34,6 @@ void StateReadSensor::loop()
     if (millis() > nextStatusUpdate)
     {
         nextStatusUpdate = millis() + 1000;
-        status = name + ": reading sensor " + String(static_cast<int>(sensorType)) + " " + String(sensor->getReadProgress() * 100) + "%";
+        status = name + ": reading sensor "+ String(sensor->getReadProgress() * 100) + "%";
     }
 }
