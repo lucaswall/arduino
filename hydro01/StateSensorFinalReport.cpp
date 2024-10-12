@@ -11,6 +11,7 @@ StateSensorFinalReport::StateSensorFinalReport(SensorManager* sensorManager, con
 
 void StateSensorFinalReport::enter()
 {
+    status = name + ": final report";
     Serial.println(F("StateSensorFinalReport::enter"));
     Serial.print(F("Temperature = ")); Serial.println(sensorManager->getTemperature());
     Serial.print(F("TDS = ")); Serial.println(sensorManager->getTds());

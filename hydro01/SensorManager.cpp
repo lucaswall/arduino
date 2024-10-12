@@ -11,6 +11,7 @@
 #include "StateSwitchSensorOff.h"
 #include "StateSensorFinalReport.h"
 #include "StateWaitLoop.h"
+#include "MqttDevice.h"
 
 SensorManager::SensorManager()
         : switchPh(SwitchPhPin), switchTds(SwitchTdsPin)
@@ -48,11 +49,20 @@ void SensorManager::init(MqttDevice *mqttDevice)
         ->setNextState(waitLoop = new StateWaitLoop(this, "WAIT_LOOP", WAIT_LOOP, WAIT_LOOPFAST))
         ->setNextState(loopState);
 
+    lastStatus = millis();
+    this->mqttDevice = mqttDevice;
 }
 
 void SensorManager::loop()
 {
-    if (currentState != nullptr) currentState->loop();
+    if (currentState != nullptr) {
+        currentState->loop();
+        if (millis() - lastStatus > 1000)
+        {
+            lastStatus = millis();
+            if (mqttDevice != nullptr) mqttDevice->updateStatus(currentState->getStatus());
+        }
+    }
 }
 
 State *SensorManager::setState(State* state)

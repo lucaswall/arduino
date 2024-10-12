@@ -10,6 +10,7 @@ StateSwitchSensorOff::StateSwitchSensorOff(SensorManager *sensorManager, const c
 
 void StateSwitchSensorOff::enter()
 {
+    status = name + ": switch sensor off";
     switchSensor->off();
     sensorManager->setState(nextState);
 }

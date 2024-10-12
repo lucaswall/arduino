@@ -11,6 +11,7 @@ StateReadSensor::StateReadSensor(SensorManager* sensorManager, const char *name,
 void StateReadSensor::enter()
 {
     sensorManager->getSensor(sensorType)->startReading();
+    status = name + ": reading sensor " + String(static_cast<int>(sensorType));
 }
 
 void StateReadSensor::loop()

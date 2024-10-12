@@ -34,5 +34,7 @@ protected:
     SwitchSensor switchPh;
     SwitchSensor switchTds;
     StateWaitLoop *waitLoop = nullptr;
+    uint32_t lastStatus = 0;
+    MqttDevice *mqttDevice = nullptr;
 
 };

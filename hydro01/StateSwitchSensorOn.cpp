@@ -10,6 +10,7 @@ StateSwitchSensorOn::StateSwitchSensorOn(SensorManager *sensorManager, const cha
 
 void StateSwitchSensorOn::enter()
 {
+    status = name + ": switch sensor on";
     switchSensor->on();
     sensorManager->setState(nextState);
 }
