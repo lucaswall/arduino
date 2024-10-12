@@ -57,7 +57,8 @@ void SensorManager::loop()
 {
     if (currentState != nullptr) {
         currentState->loop();
-        if (millis() - lastStatus > 1000)
+        const unsigned long m = millis();
+        if (m < lastStatus || m - lastStatus > 1000)
         {
             lastStatus = millis();
             if (mqttDevice != nullptr) mqttDevice->updateStatus(currentState->getStatus());
