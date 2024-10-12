@@ -15,5 +15,6 @@ protected:
 
     uint32_t waitTime = 0;
     uint32_t exitTime = 0;
+    uint32_t nextStatusTime = 0;
 
 };

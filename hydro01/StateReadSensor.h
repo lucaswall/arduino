@@ -14,5 +14,6 @@ public:
 protected:
 
     SensorType sensorType;
+    uint32_t nextStatusUpdate = 0;
 
 };

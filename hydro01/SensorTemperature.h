@@ -19,6 +19,7 @@ public:
     virtual bool isReading() const override { return false; }
     virtual bool isError() const override { return lastTemperature == DEVICE_DISCONNECTED_C; }
     virtual float getReading() const override { return isError() ? RefTemperature : lastTemperature; }
+    virtual float getReadProgress() const override { return 1.0; }
 
 protected:
 

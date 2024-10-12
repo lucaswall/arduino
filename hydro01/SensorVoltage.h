@@ -14,6 +14,7 @@ public:
     virtual bool isReading() const override { return pendingReadCount > 0; }
     virtual bool isError() const override { return false; }
     virtual float getReading() const override { return lastReading; }
+    virtual float getReadProgress() const override { return 1.0 - (float)pendingReadCount / readCount; }
 
 protected:
     

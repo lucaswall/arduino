@@ -13,5 +13,6 @@ public:
     virtual bool isReading() const = 0;
     virtual bool isError() const = 0;
     virtual float getReading() const = 0;
+    virtual float getReadProgress() const = 0;
 
 };

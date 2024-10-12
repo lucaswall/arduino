@@ -12,6 +12,7 @@ void StateReadSensor::enter()
 {
     sensorManager->getSensor(sensorType)->startReading();
     status = name + ": reading sensor " + String(static_cast<int>(sensorType));
+    nextStatusUpdate = millis() + 1000;
 }
 
 void StateReadSensor::loop()
@@ -29,5 +30,10 @@ void StateReadSensor::loop()
             Serial.print(F("Sensor ")); Serial.print(static_cast<int>(sensorType)); Serial.print(F(" = ")); Serial.println(sensor->getReading());
         }
         sensorManager->setState(nextState);
+    }
+    if (millis() > nextStatusUpdate)
+    {
+        nextStatusUpdate = millis() + 1000;
+        status = name + ": reading sensor " + String(static_cast<int>(sensorType)) + " " + String(sensor->getReadProgress() * 100) + "%";
     }
 }
