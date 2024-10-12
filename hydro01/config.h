@@ -5,8 +5,8 @@
 #define VREF 3.3
 #define MAXADC 4095.0
 
-#define SensorReadCount 30
-#define SensorReadDelay 10
+#define SensorReadCount 50
+#define SensorReadDelay 100
 
 #define RefTemperature 25.0
 #define TdsFactor 0.5
